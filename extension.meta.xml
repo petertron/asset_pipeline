@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension id="asset_pipeline" status="unreleased" xmlns="http://getsymphony.com/schemas/extension/1.0">
+    <name>Asset Pipeline</name>
+    <description>An advanced system for compiling assets.</description>
+    <repo type="github">https://github.com/Petertron/asset_pipeline</repo>
+    <!--<url type="discuss">http://getsymphony.com/discuss/thread/</url>-->
+    <types>
+        <type>Asset compilation</type>
+    </types>
+    <authors>
+        <author>
+            <name github="Petertron" symphony="Petertron">Peter Skirenko</name>
+            <email>petertron@mailservice.ms</email>
+            <website>http://www.getsymphony.com/get-involved/member/Petertron/</website>
+        </author>
+    </authors>
+    <releases>
+        <release version="0.1.0" date="2016-05-30" min="2.5.2" max="3.0.0">
+            - Initial release.
+        </release>
+    </releases>
+</extension>
