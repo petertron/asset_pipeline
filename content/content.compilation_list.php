@@ -1,6 +1,7 @@
 <?php
 
 require_once TOOLKIT . '/class.administrationpage.php';
+require_once EXTENSIONS . '/asset_pipeline/lib/defs2.php';
 
 use asset_pipeline\ap;
 
@@ -64,11 +65,13 @@ class contentExtensionAsset_pipelineCompilation_list extends AdministrationPage
 
         $source_files = ap\getSourceFiles();
 
-        $compilation_list = array();
+        /*$compilation_list = array();
         foreach (ap\getCompilationList() as $subpath => $base) {
             $compilation_list[] = $base . '/' . $subpath;
         }
-        sort($compilation_list);
+        sort($compilation_list);*/
+        $compilation_list = ap\getCompilationList();
+        //ksort($compilation_list);
 
         // Generate file-adder section
 
@@ -101,11 +104,10 @@ class contentExtensionAsset_pipelineCompilation_list extends AdministrationPage
 
         // Files table.
 
-        $files_precompiled = ap\getFilesPrecompiled();
+        //$files_precompiled = ap\getFilesPrecompiled();
         $table_rows = array();
 
         include EXTENSIONS . '/asset_pipeline/content/comp_list_table_rows.php';
-
 /*        if ($compilation_list) {
             foreach ($compilation_list as $file) {
                 $mtime = ap\getFileMTime(ap\SOURCE_DIR . '/' . $file);
@@ -137,7 +139,7 @@ class contentExtensionAsset_pipelineCompilation_list extends AdministrationPage
                 Widget::TableHead(
                     array(
                         array(__('File'), 'col'),
-                        //array(__('Subdirectory'),
+                        array(__('Assets Subdirectory'), 'col'),
                         array(__('Last Modified'), 'col'),
                         array(__('Precompiled'), 'col'),
                     )

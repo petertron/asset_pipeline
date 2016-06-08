@@ -1,5 +1,7 @@
 <?php
 
+//require_once EXTENSIONS . '/asset_pipeline/lib/defs1.php';
+require EXTENSIONS . '/asset_pipeline/lib/defs2.php';
 require EXTENSIONS . '/asset_pipeline/lib/ap.php';
 require EXTENSIONS . '/asset_pipeline/lib/prepro.php';
 
@@ -16,7 +18,7 @@ class contentExtensionAsset_pipelineCompilation_list_actions
 
     public function build(array $context = array())
     {
-        Symphony::ExtensionManager()->notifyMembers('RegisterPlugins', '/extension/asset_pipeline/');
+        ap\registerPlugins();
 
         $action = $_POST['action'];
         $source_files = ap\getSourceFiles();
@@ -55,8 +57,9 @@ class contentExtensionAsset_pipelineCompilation_list_actions
                             continue;
                         }
                         // Compile non-code file
-                        $source_file_abs = ap\file_path_join(ap\SOURCE_DIR, $file);
-                        $md5 = md5_file($source_file_abs);
+                        //$source_file_abs = ap\file_path_join(ap\SOURCE_DIR, $file);
+                        $source_path_abs = ap\SOURCE_DIR . '/' . $compilation_list[$file] .'/' . $file;
+                        $md5 = md5_file($source_path_abs);
                         $output_file = ap\filenameInsertMD5(ap\shortenFilePath($file), $md5);
                         $output_file_abs = ap\file_path_join(ap\OUTPUT_DIR, $output_file);
                         copy ($source_file_abs, $output_file_abs);
@@ -64,15 +67,21 @@ class contentExtensionAsset_pipelineCompilation_list_actions
 
                     if (!empty($css_files)) {
                         ob_start();
-                        foreach ($css_files as $source_path => $prepro) {
+                        foreach ($css_files as $file => $prepro) {
+                            $source_path = $compilation_list[$file] . '/' . $file;
                             ap\AP::processCSS($source_path, $prepro);
                             $content = ob_get_contents();
                             ob_clean();
                             $md5 = md5($content);
-                            $output_file = ap\filenameInsertMD5(ap\shortenFilePath($source_path), $md5);
+                            //$output_file = ap\filenameInsertMD5(ap\shortenFilePath($source_path), $md5);
+                            $output_file = ap\filenameInsertMD5($file, $md5);
                             $output_file_abs = ap\file_path_join(ap\OUTPUT_DIR, $output_file);
                             file_put_contents($output_file_abs, $content);
-                            //$results[$file];
+                            Symphony::Database()->insert(
+                                array('file' => $file, 'compiled_file' => $output_file),
+                                ap\TBL_FILES_PRECOMPILED,
+                                true
+                            );
                         }
                         ob_end_clean();
                     }
@@ -109,9 +118,5 @@ class contentExtensionAsset_pipelineCompilation_list_actions
         header('Content-Type: text/javascript');
         echo json_encode($this->_output);
         exit();
-    }
-
-    function precompileCodeFile($file)
-    {
     }
 }

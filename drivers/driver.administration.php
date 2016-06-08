@@ -2,16 +2,13 @@
 
 // Administration extension driver
 
+require EXTENSIONS . '/asset_pipeline/lib/defs1.php';
+
 use asset_pipeline\ap;
 
 class extension_Asset_pipeline extends Extension
 {
-    static $instance;
-
-    public  $settings;
-    private $source_subdirs;
-    public $output_url;
-    private $source_files;
+    //public  $settings;
 
     static $default_settings = array(
         'source_directory' => 'assets-src',
@@ -21,33 +18,24 @@ class extension_Asset_pipeline extends Extension
         'precompile_scripts' => 'application',
         'filename_md5_hash' => 'yes'
     );
-
+/*
     public function __construct()
     {
         parent::__construct();
         $this->settings = Symphony::Configuration()->get(ap\ID);
         if (!$this->settings) return;
 
-
-        $source_dir = ap\SOURCE_DIR;
-        $this->source_subdirs = array();
-        foreach (scandir($source_dir) as $file) {
-            if ($file[0] == '.') continue;
-            if (is_dir($source_dir . $file)) {
-                $this->source_subdirs[] = $source_dir . $file;
-            }
-        }
-
         self::$instance = $this;
     }
-
-
+*/
+/*
     public function install()
     {
     }
-
+*/
     public function uninstall()
     {
+        Symphony::Database()->query("DROP TABLE " . ap\TBL_FILES_PRECOMPILED);
         Symphony::Configuration()->remove(ap\ID);
         Symphony::Configuration()->remove(ap\COMPILATION_LIST);
         Symphony::Configuration()->write();
@@ -55,7 +43,7 @@ class extension_Asset_pipeline extends Extension
 
     public function fetchNavigation()
     {
-        if ($this->settings) {
+        if (ap\INSTALLATION_COMPLETE) {
             return array(
                 array(
                     'location' => __('Blueprints'),
@@ -114,15 +102,13 @@ class extension_Asset_pipeline extends Extension
 
     public function appendPreferences($context)
     {
-        $settings = is_array($this->settings) ? $this->settings : self::$default_settings;
-
         $fieldset = new XMLElement(
             'fieldset',
             new XMLElement('legend', 'Asset Pipeline'),
             array('class' => 'settings')
         );
 
-        if (!$this->settings) {
+        if (!ap\INSTALLATION_COMPLETE) {
             $fieldset->appendChild(
                 new XMLElement(
                     'div',
@@ -131,7 +117,11 @@ class extension_Asset_pipeline extends Extension
                     array('class' => 'columns notice')
                 )
             );
+            $settings = self::$default_settings;
+        } else {
+            $settings = Symphony::Configuration()->get(ap\ID);
         }
+
         $fieldset->appendChild(
             Widget::Label(
                 __('Source Directory'),
@@ -181,16 +171,38 @@ class extension_Asset_pipeline extends Extension
 
     public function savePreferences($context)
     {
-        /*
-        General::realiseDirectory(WORKSPACE . '/assets-src/images');
-        General::realiseDirectory(WORKSPACE . '/assets-src/stylesheets');
-        General::realiseDirectory(WORKSPACE . '/assets-src/scripts');
+        if (!ap\INSTALLATION_COMPLETE) {
+            $self_settings = $context['settings'][ap\ID];
 
-        Symphony::Configuration()->set('precompile_scripts', 'application', ap\ID);
-        Symphony::Configuration()->write();
-*/
-        if (!array_key_exists(ap\COMPILATION_LIST, $context['settings'])) {
-            $context['settings'][ap\COMPILATION_LIST] = array('scripts/application.js', 'stylesheets/application.css');
+            // Create asset directories
+
+            $source_dir = WORKSPACE . '/' . trim($self_settings['source_directory'], '/');
+            if (!is_dir($source_dir)) {
+                General::realiseDirectory($source_dir . '/images');
+                General::realiseDirectory($source_dir . '/scripts');
+                General::realiseDirectory($source_dir . '/stylesheets');
+            }
+
+            $output_dir = ($self_settings['output_parent_directory'] ? WORKSPACE : DOCROOT)
+                . '/' . trim($self_settings['output_directory'], '/');
+            General::realiseDirectory($output_dir);
+
+            // Create default compilation list
+
+            $context['settings'][ap\COMPILATION_LIST] = array(
+                'application.css' => 'stylesheets',
+                'application.js' => 'scripts'
+            );
+
+            // Create DB table for precompiled files
+
+            Symphony::Database()->query(
+                "CREATE TABLE IF NOT EXISTS `" . ap\TBL_FILES_PRECOMPILED . "` (
+                    `file` varchar(255) NOT NULL,
+                    `compiled_file` varchar(255),
+                    PRIMARY KEY (`file`)
+                )"
+            );
         }
     }
 

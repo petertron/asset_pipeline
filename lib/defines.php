@@ -4,12 +4,13 @@ namespace asset_pipeline\ap;
 
 use Symphony;
 
+/*
 function ns_define($name, $value)
 {
     define(__NAMESPACE__.'\\'.$name, $value);
-}
+}*/
 
-ns_define('ID', 'asset_pipeline');
+//ns_define('ID', 'asset_pipeline');
 
 //ns_define('EXTENSION', EXTENSIONS . '/' . ID);
 

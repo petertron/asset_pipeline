@@ -5,6 +5,11 @@ namespace asset_pipeline\ap;
 use Symphony;
 use General;
 
+function registerPlugins()
+{
+    Symphony::ExtensionManager()->notifyMembers('RegisterPlugins', '/extension/asset_pipeline/');
+}
+
 function getPreproIfExists($name)
 {
     //$prepro = '\\'.ID . "\\prepro\\$name";
@@ -17,32 +22,74 @@ function replaceFileExtension($file, $new_ext)
     return substr($file, 0, strrpos($file, '.')) . '.' . $new_ext;
 }
 
+function prepareAsset($file)
+{
+    if (!INSTALLATION_COMPLETE) return null;
+
+    $precompiled_file = Symphony::Database()->fetchVar(
+        'compiled_file', 0,
+        "SELECT `compiled_file` FROM `tbl_asset_pipeline_files_precompiled` WHERE file='$file'"
+        //sprintf("SELECT 'compiled_file' FROM '%s' WHERE file='%s'", ap\TBL_FILES_PRECOMPILED, $file)
+    );
+    if ($precompiled_file) {
+        if (is_file(OUTPUT_DIR . '/' . $precompiled_file)) {
+            return OUTPUT_URL . '/' . $precompiled_file;
+        }
+    }
+
+    // No precompiled file.
+
+    AP::initialise();
+    return AP::prepareAsset($file);
+}
+/*
+    $source_path = 'stylesheets/' . $file;
+    //$source_path_abs = SOURCE_DIR . '/' . self::$compilation_list[$file] . '/' . $file;
+    $ext = General::getExtension($source_path);
+    $prepro = getPreproIfExists($ext);
+    $output_type = $prepro ? $prepro::getOutputType() : $ext;
+    $output_path = $prepro ? replaceFileExtension($file, $output_type) : $file;
+
+    if (in_array($output_type, array('css', 'js'))) {
+        ob_start();
+        if ($output_type == 'css') {
+            self::processCSS($source_path, $prepro);
+        } elseif ($output_type == 'js') {
+            self::processJS($source_path, $prepro);
+        }
+        file_put_contents(CACHE . '/' . $output_path, ob_get_contents());
+        ob_end_clean();
+    }
+    return OUTPUT_URL . '/' . $output_path;
+}*/
+
 class AP
 {
-    static $compilation_list; // Value is set to false if there is no compilation list
-    static $files_compiled;
+    static $initialised = false;
+    static $compilation_list;
+    static $source_subdirs = array();
 
-    public static function init()
+    public static function initialise()
     {
-        self::$compilation_list = getCompilationList();
+        if (!self::$initialised) {
+            self::$compilation_list = getCompilationList();
+        }
+
+        //$source_dir = SOURCE_DIR;
+        //$this->source_subdirs = array();
+        foreach (scandir(SOURCE_DIR) as $file) {
+            if ($file[0] == '.') continue;
+            if (is_dir(SOURCE_DIR . $file)) {
+                $this->source_subdirs[] = SOURCE_DIR . $file;
+            }
+        }
     }
 
     public static function prepareAsset($file)
     {
-        /*if (self::$files_compiled[$file]) {
-            return OUTPUT_URL . '/' . self::$files_compiled[$file];
-        }*/
-
-        // No compiled file.
-        /*if (self::$compilation_list === false) return null;
-        if (!isset(self::$compilation_list)) {
-            self::$compilation_list = getCompilationList();
-        }*/
-        //if (!isset($compilation_list[$file])) return null;
-
-        //$source_path = self::$compilation_list[$file] . '/' . $file;
+        //$source_path = $compilation_list[$file] . '/' . $file;
         $source_path = 'stylesheets/' . $file;
-        //$source_path_abs = SOURCE_DIR . '/' . self::$compilation_list[$file] . '/' . $file;
+        $source_path_abs = SOURCE_DIR . '/' . $source_path;
         $ext = General::getExtension($source_path);
         $prepro = getPreproIfExists($ext);
         $output_type = $prepro ? $prepro::getOutputType() : $ext;
@@ -66,7 +113,6 @@ class AP
         $source_path_abs = SOURCE_DIR . '/' . $source_path;
         $content = file_get_contents($source_path_abs);
         if ($prepro) {
-            error_log("Boxant: $prepro");
             $result = $prepro::compile($content, dirname($source_path_abs));
             $content = $result['content'];
         }
@@ -112,3 +158,4 @@ class AP
     }
 
 }
+
