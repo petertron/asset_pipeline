@@ -2,13 +2,13 @@
 
 // Administration extension driver
 
-require EXTENSIONS . '/asset_pipeline/lib/defs1.php';
+require EXTENSIONS . '/asset_pipeline/lib/directory.php';
 
-use asset_pipeline\ap;
+use asset_pipeline\AP;
 
 class extension_Asset_pipeline extends Extension
 {
-    //public  $settings;
+    public  $settings;
 
     static $default_settings = array(
         'source_directory' => 'assets-src',
@@ -18,16 +18,18 @@ class extension_Asset_pipeline extends Extension
         'precompile_scripts' => 'application',
         'filename_md5_hash' => 'yes'
     );
-/*
+
     public function __construct()
     {
         parent::__construct();
-        $this->settings = Symphony::Configuration()->get(ap\ID);
-        if (!$this->settings) return;
 
-        self::$instance = $this;
+        $this->settings = Symphony::Configuration()->get(AP::ID);
+        $this->installation_complete = (bool)$this->settings;
+        if ($this->installation_complete) {
+            AP::initialise();
+        }
     }
-*/
+
 /*
     public function install()
     {
@@ -35,15 +37,15 @@ class extension_Asset_pipeline extends Extension
 */
     public function uninstall()
     {
-        Symphony::Database()->query("DROP TABLE " . ap\TBL_FILES_PRECOMPILED);
-        Symphony::Configuration()->remove(ap\ID);
-        Symphony::Configuration()->remove(ap\COMPILATION_LIST);
+        Symphony::Database()->query("DROP TABLE " . AP::TBL_FILES_PRECOMPILED);
+        Symphony::Configuration()->remove(AP::ID);
+        Symphony::Configuration()->remove(AP::COMPILATION_LIST);
         Symphony::Configuration()->write();
     }
 
     public function fetchNavigation()
     {
-        if (ap\INSTALLATION_COMPLETE) {
+        if ($this->installation_complete) {
             return array(
                 array(
                     'location' => __('Blueprints'),
@@ -90,6 +92,8 @@ class extension_Asset_pipeline extends Extension
 
     public function modifyLauncher()
     {
+        if (!$this->installation_complete) return;
+
         $sym_page = getCurrentPage();
         if ($sym_page == '/blueprints/asset-compilation-list/') {
             if (isset($_POST['with-selected']) || isset($_POST['action'])) {
@@ -108,7 +112,7 @@ class extension_Asset_pipeline extends Extension
             array('class' => 'settings')
         );
 
-        if (!ap\INSTALLATION_COMPLETE) {
+        if (!$this->installation_complete) {
             $fieldset->appendChild(
                 new XMLElement(
                     'div',
@@ -119,14 +123,14 @@ class extension_Asset_pipeline extends Extension
             );
             $settings = self::$default_settings;
         } else {
-            $settings = Symphony::Configuration()->get(ap\ID);
+            $settings = Symphony::Configuration()->get(AP::ID);
         }
 
         $fieldset->appendChild(
             Widget::Label(
                 __('Source Directory'),
                 Widget::Input(
-                    'settings[' . ap\ID . '][source_directory]', $settings['source_directory']
+                    'settings[' . ap::ID . '][source_directory]', $settings['source_directory']
                 ),
                 null, null, array('class' => 'column')
             )
@@ -137,7 +141,7 @@ class extension_Asset_pipeline extends Extension
             Widget::Label(
                 __('Output Parent Directory'),
                 Widget::Select(
-                    'settings[' . ap\ID . '][output_parent_directory]',
+                    'settings[' . ap::ID . '][output_parent_directory]',
                     array(
                         array('workspace', strtolower($settings['output_parent_directory']) != 'root', 'Workspace'),
                         array('root', strtolower($settings['output_parent_directory']) == 'root', 'Symphony Root')
@@ -150,7 +154,7 @@ class extension_Asset_pipeline extends Extension
             Widget::Label(
                 __('Output Directory'),
                 Widget::Input(
-                    'settings[' . ap\ID . '][output_directory]', preg_replace('/\s+/', PHP_EOL, $settings['output_directory'])
+                    'settings[' . ap::ID . '][output_directory]', preg_replace('/\s+/', PHP_EOL, $settings['output_directory'])
                 ),
                 'column'
             )
@@ -171,8 +175,8 @@ class extension_Asset_pipeline extends Extension
 
     public function savePreferences($context)
     {
-        if (!ap\INSTALLATION_COMPLETE) {
-            $self_settings = $context['settings'][ap\ID];
+        if (!$this->installation_complete) {
+            $self_settings = $context['settings'][ap::ID];
 
             // Create asset directories
 
@@ -189,7 +193,7 @@ class extension_Asset_pipeline extends Extension
 
             // Create default compilation list
 
-            $context['settings'][ap\COMPILATION_LIST] = array(
+            $context['settings'][AP::COMPILATION_LIST] = array(
                 'application.css' => 'stylesheets',
                 'application.js' => 'scripts'
             );
@@ -197,7 +201,7 @@ class extension_Asset_pipeline extends Extension
             // Create DB table for precompiled files
 
             Symphony::Database()->query(
-                "CREATE TABLE IF NOT EXISTS `" . ap\TBL_FILES_PRECOMPILED . "` (
+                "CREATE TABLE IF NOT EXISTS `" . AP::TBL_FILES_PRECOMPILED . "` (
                     `file` varchar(255) NOT NULL,
                     `compiled_file` varchar(255),
                     PRIMARY KEY (`file`)

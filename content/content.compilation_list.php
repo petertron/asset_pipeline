@@ -1,9 +1,10 @@
 <?php
 
 require_once TOOLKIT . '/class.administrationpage.php';
-require_once EXTENSIONS . '/asset_pipeline/lib/defs2.php';
+require_once EXTENSIONS . '/asset_pipeline/lib/directory.php';
 
-use asset_pipeline\ap;
+use asset_pipeline\AP;
+use asset_pipeline\CompilationList;
 
 class contentExtensionAsset_pipelineCompilation_list extends AdministrationPage
 {
@@ -11,6 +12,7 @@ class contentExtensionAsset_pipelineCompilation_list extends AdministrationPage
     {
         parent::__construct();
         $_GET['symphony-page'] = '/blueprints/asset-compilation-list/';
+        AP::initialise();
     }
 
     public function __viewIndex()
@@ -63,15 +65,13 @@ class contentExtensionAsset_pipelineCompilation_list extends AdministrationPage
             )
         );
 
-        $source_files = ap\getSourceFiles();
-
+        $source_files = AP::SourceDirectory()->getRecursiveFileList();
         /*$compilation_list = array();
         foreach (ap\getCompilationList() as $subpath => $base) {
             $compilation_list[] = $base . '/' . $subpath;
         }
         sort($compilation_list);*/
-        $compilation_list = ap\getCompilationList();
-        //ksort($compilation_list);
+        $compilation_list = new CompilationList();
 
         // Generate file-adder section
 

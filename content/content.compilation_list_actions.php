@@ -1,11 +1,10 @@
 <?php
 
 //require_once EXTENSIONS . '/asset_pipeline/lib/defs1.php';
-require EXTENSIONS . '/asset_pipeline/lib/defs2.php';
 require EXTENSIONS . '/asset_pipeline/lib/ap.php';
 require EXTENSIONS . '/asset_pipeline/lib/prepro.php';
 
-use asset_pipeline\ap;
+use asset_pipeline\AP as AP;
 use asset_pipeline\prepro;
 
 class contentExtensionAsset_pipelineCompilation_list_actions
@@ -18,11 +17,12 @@ class contentExtensionAsset_pipelineCompilation_list_actions
 
     public function build(array $context = array())
     {
-        ap\registerPlugins();
+        AP::initialise();
+        //AP::registerPlugins();
 
         $action = $_POST['action'];
-        $source_files = ap\getSourceFiles();
-        $compilation_list = ap\getCompilationList();
+        $source_files = AP::SourceDirectory()->getRecursiveFileList();
+        $compilation_list = AP::getCompilationList();
         if (!$compilation_list) {
             $compilation_list = array();
         }
@@ -33,8 +33,10 @@ class contentExtensionAsset_pipelineCompilation_list_actions
             switch ($_POST['with-selected']) {
                 case 'remove':
                     if ($compilation_list) {
-                        //$compilation_list = array_values(array_diff($compilation_list, $items));
-                        ap\saveCompilationList($compilation_list);
+                        foreach ($items as $item) {
+                            unset($compilation_list[$item]);
+                        }
+                        AP::saveCompilationList($compilation_list);
                     }
                     break;
                 case 'remove-compiled-files':
@@ -46,7 +48,7 @@ class contentExtensionAsset_pipelineCompilation_list_actions
 
                     foreach ($items as $file) {
                         $ext = General::getExtension($file);
-                        $prepro = prepro\getPreproIfExists($ext);
+                        $prepro = AP::getPreproIfExists($ext);
                         $output_type = $prepro ? $prepro::getOutputType() : $ext;
                         if ($output_type == 'css') {
                             $css_files[$file] = $prepro;
@@ -57,29 +59,28 @@ class contentExtensionAsset_pipelineCompilation_list_actions
                             continue;
                         }
                         // Compile non-code file
-                        //$source_file_abs = ap\file_path_join(ap\SOURCE_DIR, $file);
-                        $source_path_abs = ap\SOURCE_DIR . '/' . $compilation_list[$file] .'/' . $file;
+                        $source_file_abs = AP::SourceDirectory()->getPathAbs(
+                            $compilation_list[$file] .'/' . $file
+                        );
                         $md5 = md5_file($source_path_abs);
-                        $output_file = ap\filenameInsertMD5(ap\shortenFilePath($file), $md5);
-                        $output_file_abs = ap\file_path_join(ap\OUTPUT_DIR, $output_file);
+                        $output_file = AP::filenameInsertMD5($file, $md5);
+                        $output_file_abs = AP::OutputDirectory()->getPathAbs($output_file);
                         copy ($source_file_abs, $output_file_abs);
                     }
 
                     if (!empty($css_files)) {
                         ob_start();
                         foreach ($css_files as $file => $prepro) {
-                            $source_path = $compilation_list[$file] . '/' . $file;
-                            ap\AP::processCSS($source_path, $prepro);
+                            $source_file = $compilation_list[$file] . '/' . $file;
+                            AP::processCSS($source_file, $prepro);
                             $content = ob_get_contents();
                             ob_clean();
                             $md5 = md5($content);
-                            //$output_file = ap\filenameInsertMD5(ap\shortenFilePath($source_path), $md5);
-                            $output_file = ap\filenameInsertMD5($file, $md5);
-                            $output_file_abs = ap\file_path_join(ap\OUTPUT_DIR, $output_file);
-                            file_put_contents($output_file_abs, $content);
+                            $output_file = AP::filenameInsertMD5($file, $md5);
+                            AP::OutputDirectory()->writeFile($output_file, $content);
                             Symphony::Database()->insert(
                                 array('file' => $file, 'compiled_file' => $output_file),
-                                ap\TBL_FILES_PRECOMPILED,
+                                AP::TBL_FILES_PRECOMPILED,
                                 true
                             );
                         }
@@ -96,7 +97,7 @@ class contentExtensionAsset_pipelineCompilation_list_actions
                 }
             }
             ksort($compilation_list);
-            ap\saveCompilationList($compilation_list);
+            AP::saveCompilationList($compilation_list);
         }
 
         $files_available = $compilation_list ?
