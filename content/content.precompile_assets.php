@@ -1,7 +1,7 @@
 <?php
 
 require_once TOOLKIT . '/class.administrationpage.php';
-require_once EXTENSIONS . '/asset_pipeline/lib/ap.php';
+//require_once EXTENSIONS . '/asset_pipeline/lib/defines.php';
 
 use asset_pipeline\AP;
 
@@ -11,7 +11,6 @@ class contentExtensionAsset_pipelinePrecompile_assets extends AdministrationPage
     {
         parent::__construct();
         $_GET['symphony-page'] = '/system/precompile-assets/';
-        //AP::initialise();
     }
 
     public function __viewIndex()
@@ -37,8 +36,7 @@ class contentExtensionAsset_pipelinePrecompile_assets extends AdministrationPage
             array('id' => 'file-adder', 'style' => 'margin: 8px 18px 0 18px;')
         );
 
-        $include = MANIFEST . '/asset_pipeline/source-directories.php';
-        if (is_file($include)) include $include;
+        $source_directories = is_file(AP\SOURCE_DIRECTORIES) ? include AP\SOURCE_DIRECTORIES : null;
         $options = array();
         if (is_array($source_directories)) {
             foreach ($source_directories as $directory) {
@@ -47,7 +45,7 @@ class contentExtensionAsset_pipelinePrecompile_assets extends AdministrationPage
         }
         $fieldset->appendChild(
             Widget::Label(
-                __('Asset Directories<i>Select directories or leave blank to compile all directories</i>'),
+                __('Asset Directories'),
                 Widget::Select('items[]', $options, array('id' => 'files-available', 'multiple' => 'multiple')),
                 null
             )
@@ -60,7 +58,13 @@ class contentExtensionAsset_pipelinePrecompile_assets extends AdministrationPage
             )
         );
         $this->Form->appendChild($fieldset);
-        $this->Form->appendChild(new XMLElement('div', null, array('id' => 'compilation-log')));
+        $this->Form->appendChild(
+            new XMLElement(
+                'div',
+                null,
+                array('id' => 'compilation-log', 'style' => 'margin: 8px 18px 0 18px;')
+            )
+        );
 
         /*$version = new XMLElement('p', 'Symphony ' . Symphony::Configuration()->get('version', 'symphony'), array(
             'id' => 'version'

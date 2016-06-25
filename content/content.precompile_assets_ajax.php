@@ -1,8 +1,10 @@
 <?php
 
-require_once EXTENSIONS . '/asset_pipeline/lib/ap.php';
+//require_once EXTENSIONS . '/asset_pipeline/lib/defines.php';
+require_once EXTENSIONS . '/asset_pipeline/lib/pipeline.php';
 
 use asset_pipeline\AP;
+use asset_pipeline\Pipeline;
 
 class contentExtensionAsset_pipelinePrecompile_assets_ajax
 {
@@ -14,15 +16,13 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
 
     public function build(array $context = array())
     {
-        AP::initialise();
-        AP::registerPlugins();
+        Pipeline::initialise();
 
         if (is_array($_POST['items'])) {
             $items = $_POST['items'];
 
-            $output_dir_abs = AP::getOutputDirectory();
+            $source_directories = include AP\SOURCE_DIRECTORIES;
 
-            include MANIFEST . '/asset_pipeline/source-directories.php';
             $this->_output['html'] = "Files compiled:<br><br>";
 
             // Compile non-code files
@@ -31,14 +31,14 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                 $directory = $source_directories[$dir_path];
                 if (in_array($directory['type'], array('css', 'js'))) continue;
                 $source_dir_abs = WORKSPACE . '/' . $dir_path;// . '/';
-                $listing = AP::getRecursiveFileList($source_dir_abs);
+                $listing = Pipeline::getRecursiveFileList($source_dir_abs);
                 foreach ($listing as $file) {
                     $source_file_abs = $source_dir_abs . '/' . $file;
                     $md5 = md5_file($source_file_abs);
-                    $output_file = AP::filenameInsertMD5($file, $md5);
-                    $output_file_abs = $output_dir_abs . '/' . $output_file;
+                    $output_file = Pipeline::filenameInsertMD5($file, $md5);
+                    $output_file_abs = AP\OUTPUT_DIR . '/' . $output_file;
                     copy ($source_file_abs, $output_file_abs);
-                    AP::registerCompiledFile($file, $output_file);
+                    Pipeline::registerCompiledFile($file, $output_file);
                     $this->_output['html'] .= "$output_file<br>";
                 }
             }
@@ -49,7 +49,7 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
             foreach ($items as $dir_path) {
                 $directory = $source_directories[$dir_path];
                 $type = $directory['type'];
-                if (!AP::isCodeType($type)) continue;
+                if (!Pipeline::isCodeType($type)) continue;
                 //if (!array_key_exists($type, $processors)) continue;
                 $source_dir_abs = WORKSPACE . '/' . $dir_path;
                 $to_compile = $directory['precompile_files'];
@@ -57,22 +57,52 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                 if (is_array($to_compile) && !empty($to_compile)) {
                     foreach ($to_compile as $file) {
                         $input_type = General::getExtension($file);
-                        if (AP::getOutputType($input_type) != $type) continue;
+                        if (Pipeline::getOutputType($input_type) != $type) continue;
                         $source_file_abs = $source_dir_abs . '/' . $file;
-                        $output = AP::$processCode($source_file_abs);
-                        AP::deleteCompiledFile($file); // Delete previous compilation, if any
+                        $output = Pipeline::$processCode($source_file_abs);
+                        Pipeline::deleteCompiledFile($file); // Delete previous compilation, if any
                         $md5 = md5($content);
-                        $output_file = AP::filenameInsertMD5($file, $md5);
-                        $output_file_abs = $output_dir_abs . '/' . $output_file;
+                        $output_file = Pipeline::filenameInsertMD5($file, $md5);
+                        $output_file_abs = AP\OUTPUT_DIR . '/' . $output_file;
+                        $output = self::minify($output, $type);
                         file_put_contents($output_file_abs, $output);
-                        AP::registerCompiledFile($file, $output_file);
+                        Pipeline::registerCompiledFile($file, $output_file);
                         $this->_output['html'] .= "$output_file<br>";
                     }
                 }
             }
 
-            AP::saveCompilationInfo();
+            Pipeline::saveCompilationInfo();
         }
+    }
+
+    static function minify($buffer, $type)
+    {
+        switch ($type) {
+            case 'css':
+                $buffer = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $buffer);
+                // Remove space after colons
+                $buffer = str_replace(': ', ':', $buffer);
+                // Remove line breaks & tabs
+                $buffer = str_replace(array("\r\n", "\r", "\n", "\t"), '', $buffer);
+                // Collapse adjacent spaces into a single space
+                //$buffer = ereg_replace(" {2,}", ' ',$buffer);
+                $buffer = preg_replace('/\s{2,}/', ' ', $buffer);
+                // Remove spaces that might still be left where we know they aren't needed
+                $buffer = str_replace(array('} '), '}', $buffer);
+                $buffer = str_replace(array('{ '), '{', $buffer);
+                $buffer = str_replace(array('; '), ';', $buffer);
+                $buffer = str_replace(array(', '), ',', $buffer);
+                $buffer = str_replace(array(' }'), '}', $buffer);
+                $buffer = str_replace(array(' {'), '{', $buffer);
+                $buffer = str_replace(array(' ;'), ';', $buffer);
+                $buffer = str_replace(array(' ,'), ',', $buffer);
+                break;
+            case 'js':
+                break;
+        }
+
+        return $buffer;
     }
 
     public function generate($page = NULL)

@@ -2,48 +2,44 @@
 
 // Driver for administration
 
-require EXTENSIONS . '/asset_pipeline/lib/defines.php';
-require EXTENSIONS . '/asset_pipeline/lib/ap.php';
+//require_once EXTENSIONS . '/asset_pipeline/lib/defines.php';
+require EXTENSIONS . '/asset_pipeline/lib/pipeline.php';
 
-use asset_pipeline\def;
 use asset_pipeline\AP;
+use asset_pipeline\Pipeline;
 
 class extension_Asset_pipeline extends Extension
 {
     public  $settings;
 
     static $default_settings = array(
-        'output_directory_parent' => 'workspace',
+        'output_parent_directory' => 'workspace',
         'output_directory' => 'assets',
         'filename_md5_hash' => 'yes'
     );
 
-    public function __construct()
+/*    public function __construct()
     {
         parent::__construct();
 
-        $this->settings = Symphony::Configuration()->get(AP::ID);
-        $this->installation_complete = (bool)$this->settings;
-        if ($this->installation_complete) {
-            AP::initialise();
-        }
+        //$this->settings = Symphony::Configuration()->get(AP\ID);
     }
-
+*/
     public function install()
     {
     }
 
     public function uninstall()
     {
-
-        Symphony::Configuration()->remove(def\ID);
+        Symphony::Configuration()->remove(AP\ID);
         Symphony::Configuration()->write();
+        General::deleteDirectory(MANIFEST . '/' . AP\ID);
+        General::deleteDirectory(AP\OUTPUT_DIR);
     }
 
     public function fetchNavigation()
     {
-        //if ($this->installation_complete) {
-        if (def\INSTALLATION_COMPLETE) {
+        if (AP\INSTALLATION_COMPLETE) {
             return array(
                 array(
                     'location' => __('System'),
@@ -90,8 +86,7 @@ class extension_Asset_pipeline extends Extension
 
     public function modifyLauncher()
     {
-        if (!$this->installation_complete) return;
-        //if (!def\INSTALLATION_COMPLETE) return;
+        if (!AP\INSTALLATION_COMPLETE) return;
 
         $sym_page = getCurrentPage();
         if ($sym_page == '/system/precompile-assets/') {
@@ -105,7 +100,9 @@ class extension_Asset_pipeline extends Extension
 
     public function appendPreferences($context)
     {
-        Administration::instance()->Page->addScriptToHead(URL . '/extensions/asset_pipeline/assets/asset-pipeline.preferences.js', 3134);
+        Administration::instance()->Page->addScriptToHead(
+            URL . '/extensions/asset_pipeline/assets/asset-pipeline.preferences.js', 3134
+        );
 
         $group = new XMLElement(
             'fieldset',
@@ -113,7 +110,7 @@ class extension_Asset_pipeline extends Extension
             array('class' => 'settings')
         );
 
-        if (!$this->installation_complete) {
+        if (!AP\INSTALLATION_COMPLETE) {
             $group->appendChild(
                 new XMLElement(
                     'div',
@@ -124,8 +121,10 @@ class extension_Asset_pipeline extends Extension
             );
             $settings = self::$default_settings;
         } else {
-            $settings = Symphony::Configuration()->get(AP::ID);
+            $settings = Symphony::Configuration()->get(AP\ID);
         }
+
+        // Output directory.
 
         $two_columns = new XMLElement('div', null, array('class' => 'two columns'));
         $two_columns->appendChild(
@@ -161,18 +160,22 @@ class extension_Asset_pipeline extends Extension
         );
         $group->appendChild($two_columns);
 */
+        // Source directories.
+
         $group->appendChild(new XMLElement('p', __('Source Directories'), array('class' => 'label')));
         $div = new XMLElement('div', null, array('class' => 'frame asset-pipeline-duplicator'));
         $duplicator = new XMLElement('ol');
-        $duplicator->setAttribute('data-add', __('Add source directory'));
-        $duplicator->setAttribute('data-remove', __('Remove source directory'));
+        $duplicator->setAttribute('data-add', __('Add directory'));
+        $duplicator->setAttribute('data-remove', __('Remove directory'));
 
+        // Create templates.
         $duplicator->appendChild(self::createSourceDirDuplicatorTemplate('css'));
         $duplicator->appendChild(self::createSourceDirDuplicatorTemplate('js'));
         $duplicator->appendChild(self::createSourceDirDuplicatorTemplate('*'));
 
-        // Use source directories POST data in case of an error
-        $source_directories = isset($_POST['asset_pipeline']['source_directories']) ? $_POST['asset_pipeline']['source_directories'] : array();
+        // If there are errors then use POST data.
+        $source_directories = isset($_POST['asset_pipeline']['source_directories']) ?
+            $_POST['asset_pipeline']['source_directories'] : array();
 
         if (!empty($source_directories) && !empty($this->source_directories_errors)) {
             foreach ($source_directories as $position => $directory) {
@@ -182,9 +185,8 @@ class extension_Asset_pipeline extends Extension
             }
         } // otherwise use saved data
         else {
-            //(file_exists(MANIFEST . '/asset_pipeline/source-directories.php')) ? include(MANIFEST . '/asset_pipeline/source-directories.php') : $source_directories = array();
-            $source_directories = file_exists(def\SOURCE_DIRECTORIES) ?
-                include def\SOURCE_DIRECTORIES : array();
+             $source_directories = file_exists(AP\SOURCE_DIRECTORIES) ?
+                include AP\SOURCE_DIRECTORIES : array();
             if (is_array($source_directories) && !empty($source_directories)) {
                 $position = 0;
                 foreach ($source_directories as $path => $values) {
@@ -204,29 +206,28 @@ class extension_Asset_pipeline extends Extension
 
     public function savePreferences($context)
     {
-        if (!$this->installation_complete) {
-            $self_settings = $context['settings'][ap::ID];
+        if (AP\INSTALLATION_COMPLETE) {
+            $self_settings = $context['settings'][AP\ID];
 
             // Create asset directories
-            $source_dir = WORKSPACE . '/' . trim($self_settings['source_directory'], '/');
-
-            $output_dir = ($self_settings['output_parent_directory'] ? WORKSPACE : DOCROOT)
+            $output_dir = (($self_settings['output_parent_directory'] == 'docroot') ? DOCROOT : WORKSPACE)
                 . '/' . trim($self_settings['output_directory'], '/');
             General::realiseDirectory($output_dir);
+            General::realiseDirectory(AP\CACHE);
         }
 
         // Save source_directories (if they exist)
 
         if (isset($_POST['asset_pipeline']['source_directories'])) {
-            $source_directories_saved = $this->saveSourceDirectories($_POST['asset_pipeline']['source_directories']);
-        } // nothing posted, so clear source_directories
+            $source_directories_saved = $this->saveSourceDirectories($_POST[AP\ID]['source_directories']);
+        } // Nothing posted, so clear source_directories.
         else {
             $source_directories_saved = $this->saveSourceDirectories(array());
         }
 
-        // there were errors saving the source_directories
+        // There were errors saving the source_directories.
         if ($source_directories_saved === false) {
-            $context['errors']['source_directories'] = __('An error occurred while saving the source_directories. Make sure the source_directories file, %s, exists and is writable and the directory, %s, is also writable.',
+            $context['errors']['source_directories'] = __('An error occurred while saving the source directories. Make sure the source_directories file, %s, exists and is writable and the directory, %s, is also writable.',
                 array(
                     '<code>/manifest/asset_pipeline/source-directories.php</code>',
                     '<code>/manifest/asset_pipeline</code>',
@@ -242,7 +243,7 @@ class extension_Asset_pipeline extends Extension
     public function saveSourceDirectories($source_directories)
     {
         $spacer = "    ";
-        $string = "<?php" . PHP_EOL . PHP_EOL . "\$source_directories = array(" . PHP_EOL;
+        $string = "<?php" . PHP_EOL . PHP_EOL . "return array(" . PHP_EOL;
 
         if (is_array($source_directories) && !empty($source_directories)) {
             // Array to collect paths
@@ -260,7 +261,7 @@ class extension_Asset_pipeline extends Extension
                     $directory['path'] = $_POST['asset_pipeline']['source_directories'][$position]['path'] = Lang::createHandle($directory['name']);
                 }
 
-                if (AP::isCodeType($directory['type'])) {
+                if (self::isCodeType($directory['type'])) {
                     if (!empty($directory['precompile_files'])) {
                         $to_precompile = array();
                         foreach (explode(PHP_EOL, $directory['precompile_files']) as $file) {
@@ -295,10 +296,10 @@ class extension_Asset_pipeline extends Extension
                     $string .= PHP_EOL . $spacer . "),";
                     $string .= PHP_EOL . $spacer . "########" . PHP_EOL;
 
-                    // collect recipe handle
+                    // Collect handle
                     $paths[] = $directory['path'];
                 } else {
-                    // handle does exist => set error
+                    // Handle does exist, set error.
                     $this->directoy_paths_errors[$position] = array(
                         'invalid' => __('A recipe with this handle already exists. All handles must be unique.')
                     );
@@ -310,11 +311,11 @@ class extension_Asset_pipeline extends Extension
 
         // notify for duplicate source_directories handles
         if (!empty($this->source_directories_errors)) {
-            return false;//self::__INVALID_RECIPES__;
+            return false;//self::__INVALID_STUFF__;
         }
 
         // try to write source_directories file
-        if (!General::writeFile(MANIFEST . '/asset_pipeline/source-directories.php', $string, Symphony::Configuration()->get('write_mode', 'file'))) {
+        if (!General::writeFile(AP\SOURCE_DIRECTORIES, $string, Symphony::Configuration()->get('write_mode', 'file'))) {
             return false; //self::__ERROR_SAVING_SOURCE_DIRECTORIES__;
         }
 
@@ -322,7 +323,12 @@ class extension_Asset_pipeline extends Extension
         return true; //self::__OK__;
     }
 
-    public static function createSourceDirDuplicatorTemplate($type = '*', $position = '-1', $values = array(), $error = false)
+    public static function createSourceDirDuplicatorTemplate(
+        $type = '*',
+        $position = '-1',
+        $values = array(),
+        $error = false
+    )
     {
         $types = array(
             'css' => __('Stylesheets directory'),
@@ -378,7 +384,7 @@ class extension_Asset_pipeline extends Extension
 
         $li->appendChild($group);
 
-        if (AP::isCodeType($type)) {
+        if (self::isCodeType($type)) {
             $label = Widget::Label(
                 __('Precompile Files<i>Put each file on a separate line</i>'), null, 'column'
             );
@@ -398,4 +404,8 @@ class extension_Asset_pipeline extends Extension
         return $li;
     }
 
+    static function isCodeType($file_ext)
+    {
+        return in_array($file_ext, array('css', 'js'));
+    }
 }

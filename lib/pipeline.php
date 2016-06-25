@@ -2,48 +2,34 @@
 
 namespace asset_pipeline;
 
+use asset_pipeline\AP;
 use Symphony;
 use General;
 
-class AP
+class Pipeline
 {
     const ID = 'asset_pipeline';
 
     private static $initialised = false;
 
     private static $source_directories;
-    private static $files_compiled;
+    private static $files_precompiled;
     private static $file_files_precompiled;
-    private static $output_dir;
-    private static $output_url;
     private static $plugins = array();
 
     public static function initialise()
     {
         if (self::$initialised) return;
 
-        // Source directories
+        self::$source_directories = is_file(AP\SOURCE_DIRECTORIES) ?
+            include AP\SOURCE_DIRECTORIES : array();
 
-        include MANIFEST . '/asset_pipeline/source-directories.php';
-        self::$source_directories = $source_directories;
+        self::$files_precompiled = is_file(AP\FILES_PRECOMPILED) ?
+            include AP\FILES_PRECOMPILED : array();
 
-        // Define output directory
-
-        $output_dir = trim(self::getSetting('output_directory'), '/');
-        $use_docroot = (self::getSetting('output_parent_directory') == 'docroot');
-        self::$file_files_precompiled = MANIFEST . '/asset_pipeline/files-compiled.php';
-        self::$output_dir = ($use_docroot ? DOCROOT : WORKSPACE) . '/' . $output_dir;
-        self::$output_url = ($use_docroot ? '/' : '/workspace/') . $output_dir;
-
-        self::$files_compiled = is_file(self::$file_files_precompiled) ?
-            include self::$file_files_precompiled : array();
+        self::registerPlugins();
 
         self::$initialised = true;
-    }
-
-    public static function getFilesCompiled()
-    {
-        return self::$files_compiled;
     }
 
     public static function registerPlugins()
@@ -53,13 +39,9 @@ class AP
         );
     }
 
-    public static function getOutputType($input_type)
+    public static function getFilesCompiled()
     {
-        if (self::$plugins[$input_type]) {
-            return self::$plugins[$input_type];
-        } else {
-            return $input_type;
-        }
+        return self::$files_precompiled;
     }
 
     public static function getSetting($name)
@@ -67,14 +49,27 @@ class AP
         return Symphony::Configuration()->get($name, self::ID);
     }
 
-    public static function getOutputDirectory()
+    public static function getOutputType($input_type)
     {
-        return self::$output_dir;
+        if (array_key_exists($input_type, self::$plugins)) {
+            return self::$plugins[$input_type]['output_type'];
+        } else {
+            return $input_type;
+        }
     }
 
-    public static function getOutputUrl()
+    public static function getDriver($input_type)
     {
-        return self::$output_url;
+        if (array_key_exists($input_type, self::$plugins)) {
+            return self::$plugins[$input_type]['driver'];
+        } else {
+            return null;
+        }
+    }
+
+    public static function isCodeType($file_ext)
+    {
+        return in_array($file_ext, array('css', 'js'));
     }
 
     public static function readFile($path_abs)
@@ -91,17 +86,17 @@ class AP
      */
     public static function prepareAsset($file)
     {
-        //if (!INSTALLATION_COMPLETE) return null;
+        if (!AP\INSTALLATION_COMPLETE) return null;
 
         // If file exists in output directory, return URL for it.
-        if (isset(self::$files_compiled[$file])) {
-            $file_out = self::$files_compiled[$file];
+        if (isset(self::$files_precompiled[$file])) {
+            $file_out = self::$files_precompiled[$file];
         } else {
             $file_out = $file;
         }
 
-        if (is_file(self::$output_dir . '/' . $file_out)) {
-            return self::$output_url . '/' . $file_out;
+        if (is_file(AP\OUTPUT_DIR . '/' . $file_out)) {
+            return AP\OUTPUT_URL . '/' . $file_out;
         }
 
         // No file in output directory -- compile now.
@@ -117,17 +112,21 @@ class AP
         }
         if (!$file_found) return null;
 
-        $input_type = General::getExtension($source_file_abs);
-        $output_type = AP::getOutputType($input_type);
+        self::clearDirectory(AP\CACHE);
 
+        $input_type = General::getExtension($source_file_abs);
+        $output_type = self::getOutputType($input_type);
         $output_file = ($output_type == $input_type) ?
             $file : self::replaceExtension($file, $output_type);
+        $output_file_abs = AP\CACHE . '/' . $output_file;
         if ($output_type == 'css') {
             $output = self::processCSS($source_file_abs);
-            file_put_contents(MANIFEST . '/asset_pipeline/cache/' . $output_file, $output);
+            file_put_contents($output_file_abs, $output);
         } elseif ($output_type == 'js') {
             $output = self::processJS($source_file_abs);
-            file_put_contents(MANIFEST . '/asset_pipeline/cache/' . $output_file, $output);
+            file_put_contents($output_file_abs, $output);
+        } else {
+            symlink($source_file_abs, $output_file_abs);
         }
 
         return "/$output_file/?mode=pipeline";
@@ -137,7 +136,7 @@ class AP
 
     public static function processCSS($source_path_abs)
     {
-        $this_func = __METHOD__;
+        $this_method = __METHOD__;
 
         $output = '';
         $dir_path = dirname($source_path_abs);
@@ -145,7 +144,9 @@ class AP
         $input_type = General::getExtension($source_path_abs);
         if ($input_type != 'css') {
             if (self::getOutputType($input_type) == 'css') {
-                $result = call_user_func("asset_pipeline\\$input_type\\compile", $content, $dir_path);
+                $driver = self::getDriver($input_type);
+                $result = $driver->compile($content, $dir_path);
+                //$result = call_user_func("asset_pipeline\\$input_type\\compile", $content, $dir_path);
                 $content = $result['content'];
             } else {
                 return false; // Invalid input type
@@ -171,7 +172,7 @@ class AP
                 }
                 if(!empty($requires)) {
                     foreach ($requires as $file) {
-                        $output .= $this_func($dir_path . '/' . $file);
+                        $output .= $this_method($dir_path . '/' . $file);
                     }
                 }
             }
@@ -184,7 +185,7 @@ class AP
 
     public static function processJS($source_path_abs)
     {
-        $this_func = __METHOD__;
+        $this_method = __METHOD__;
 
         $output = '';
         $dir_path = dirname($source_path_abs);
@@ -192,7 +193,8 @@ class AP
         $input_type = General::getExtension($source_path_abs);
         if ($input_type != 'js') {
             if (self::getOutputType($input_type) == 'js') {
-                $result = call_user_func("asset_pipeline\\$input_type\\compile", $body, $dir_path);
+                $driver = self::getDriver($input_type);
+                $result = $driver->compile($body, $dir_path);
                 $body = $result['content'];
             }
         } else {
@@ -221,7 +223,7 @@ class AP
 
         if(!empty($requires)) {
             foreach ($requires as $file) {
-                $output .= $this_func($dir_path . '/' . $file);
+                $output .= $this_method($dir_path . '/' . $file);
             }
         }
 
@@ -258,31 +260,26 @@ class AP
         return $files;
     }
 
-    public static function isCodeType($file_ext)
-    {
-        return in_array($file_ext, array('css', 'js'));
-    }
-
     public static function saveCompilationInfo()
     {
         $string = "<?php\n\nreturn array(\n";
-        foreach (self::$files_compiled as $key => $value) {
+        foreach (self::$files_precompiled as $key => $value) {
             $string .= "    '$key' => '$value',\n";
         }
         $string .= ");";
-        file_put_contents(self::$file_files_precompiled, $string);
+        file_put_contents(AP\FILES_PRECOMPILED, $string);
     }
 
     public static function registerCompiledFile($file, $output_file)
     {
-        self::$files_compiled[$file] = $output_file;
+        self::$files_precompiled[$file] = $output_file;
     }
 
     public static function deleteCompiledFile($file)
     {
-        if (!isset(self::$files_compiled[$file])) return;
+        if (!isset(self::$files_precompiled[$file])) return;
 
-        $to_delete = self::$output_dir . '/' . self::$files_compiled[$file];
+        $to_delete = AP\OUTPUT_DIR . '/' . self::$files_precompiled[$file];
         if (is_file($to_delete)) {
             unlink($to_delete);
         }
@@ -292,20 +289,37 @@ class AP
     {
         return substr($file, 0, strrpos($file, '.')) . '.' . $new_ext;
     }
-}
 
-/*
-    public function deleteFile($path)
+    public static function clearDirectory($dir, $silent = true)
     {
-        $path_abs = $this->getPathAbs($path);
-        if (file_exists($path_abs)) {
-            unlink ($path_abs);
+        $this_method = __METHOD__;
+
+        try {
+            if (!file_exists($dir)) {
+                return true;
+            }
+
+            if (!is_dir($dir)) {
+                return unlink($dir);
+            }
+
+            foreach (scandir($dir) as $item) {
+                if ($item == '.' || $item == '..') {
+                    continue;
+                }
+
+                if (!$this_method($dir.DIRECTORY_SEPARATOR.$item)) {
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (Exception $ex) {
+            if ($silent === false) {
+                throw new Exception(__('Unable to remove - %s', array($dir)));
+            }
+
+            return false;
         }
     }
-
-    public function getPathAbs($path)
-    {
-        return $this->base_dir . '/' . trim($path, '/');
-    }
-
-*/
+}

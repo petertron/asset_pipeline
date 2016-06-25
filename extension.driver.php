@@ -4,4 +4,6 @@
 define_safe('APP_MODE', isset($_GET['mode']) ? $_GET['mode'] : 'frontend');
 
 // Load driver.
-require EXTENSIONS . '/asset_pipeline/drivers/driver.' . APP_MODE . '.php';
+require __DIR__ . '/drivers/driver.' . APP_MODE . '.php';
+
+require __DIR__ . '/lib/defines.php';

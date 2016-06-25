@@ -2,6 +2,10 @@
 
 // Driver for pipeline output.
 
+//require_once EXTENSIONS . '/asset_pipeline/lib/defines.php';
+
+use asset_pipeline\AP;
+
 class extension_Asset_Pipeline extends Extension
 {
     public function modifyLauncher()
@@ -11,7 +15,7 @@ class extension_Asset_Pipeline extends Extension
         function renderer_serve_asset()
         {
             $file = trim(getCurrentPage(), '/');
-            $output_path_abs = MANIFEST . '/asset_pipeline/cache/' . $file;
+            $output_path_abs = AP\CACHE . '/' . $file;
             $mimetypes = array(
                 'txt'   => 'text/plain',
                 'css'   => 'text/css',
@@ -47,19 +51,9 @@ class extension_Asset_Pipeline extends Extension
 
             header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
             header('Cache-Control: no-cache');
-            header('Content-type: ' . $mimetype[$ext]);
+            header('Content-type: ' . $mimetypes[General::getExtension($file)]);
             readfile($output_path_abs);
             exit;
         }
     }
 }
-
-/*
-        $ext = General::getExtension($file);
-        if ($ext == 'css' || $ext == 'js') {
-            $output_path_abs = MANIFEST . '/asset_pipeline/cache/' . $file;
-        } else {
-            $output_path_abs = AP::getSourceDir() . '/' . $file;
-            $output_path_abs = AP::getSourceDir() . '/' . $file;
-        }
-*/
