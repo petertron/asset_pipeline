@@ -2,7 +2,6 @@
 
 // Driver for frontend.
 
-//require_once EXTENSIONS . '/asset_pipeline/lib/defines.php';
 require_once EXTENSIONS . '/asset_pipeline/lib/pipeline.php';
 
 use asset_pipeline\Pipeline;

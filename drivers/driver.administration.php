@@ -18,13 +18,6 @@ class extension_Asset_pipeline extends Extension
         'filename_md5_hash' => 'yes'
     );
 
-/*    public function __construct()
-    {
-        parent::__construct();
-
-        //$this->settings = Symphony::Configuration()->get(AP\ID);
-    }
-*/
     public function install()
     {
     }
@@ -34,7 +27,7 @@ class extension_Asset_pipeline extends Extension
         Symphony::Configuration()->remove(AP\ID);
         Symphony::Configuration()->write();
         General::deleteDirectory(MANIFEST . '/' . AP\ID);
-        General::deleteDirectory(AP\OUTPUT_DIR);
+        //General::deleteDirectory(AP\OUTPUT_DIR);
     }
 
     public function fetchNavigation()
@@ -107,16 +100,15 @@ class extension_Asset_pipeline extends Extension
         $group = new XMLElement(
             'fieldset',
             new XMLElement('legend', 'Asset Pipeline'),
-            array('class' => 'settings')
+            array('class' => 'settings condensed')
         );
 
         if (!AP\INSTALLATION_COMPLETE) {
             $group->appendChild(
                 new XMLElement(
                     'div',
-                    __('The settings for this extension have not been saved yet. When you save your preferences, '
-                    . 'folders for your assets will be created if they do not exist already.'),
-                    array('class' => 'columns notice')
+                    __('No settings have been saved for this extension. Choose an output directory and at least one source directory. When you save your preferences, directories will be created if they do not exist.'),
+                    array('class' => 'columns notice', 'style' => 'padding-left: 8px; padding-right: 8px; margin-bottom: 6px')
                 )
             );
             $settings = self::$default_settings;
@@ -126,7 +118,7 @@ class extension_Asset_pipeline extends Extension
 
         // Output directory.
 
-        $two_columns = new XMLElement('div', null, array('class' => 'two columns'));
+        $two_columns = new XMLElement('div', null, array('class' => 'two columns condensed'));
         $two_columns->appendChild(
             Widget::Label(
                 __('Output Parent Directory'),
@@ -151,6 +143,7 @@ class extension_Asset_pipeline extends Extension
             )
         );
         $group->appendChild($two_columns);
+        $group->appendChild(new XMLElement('p', __('The output directory is where your files are placed when you precompile them for production.'), array('class' => 'help')));
         /*$two_columns = new XMLElement('div', null, array('class' => 'two columns'));
         Widget::Checkbox(
             'settings[asset_pipeline][generate_md5]',
@@ -206,7 +199,7 @@ class extension_Asset_pipeline extends Extension
 
     public function savePreferences($context)
     {
-        if (AP\INSTALLATION_COMPLETE) {
+        //if (AP\INSTALLATION_COMPLETE) {
             $self_settings = $context['settings'][AP\ID];
 
             // Create asset directories
@@ -214,7 +207,7 @@ class extension_Asset_pipeline extends Extension
                 . '/' . trim($self_settings['output_directory'], '/');
             General::realiseDirectory($output_dir);
             General::realiseDirectory(AP\CACHE);
-        }
+        //}
 
         // Save source_directories (if they exist)
 
