@@ -39,8 +39,8 @@ class contentExtensionAsset_pipelinePrecompile_assets extends AdministrationPage
         $source_directories = is_file(AP\SOURCE_DIRECTORIES) ? include AP\SOURCE_DIRECTORIES : null;
         $options = array();
         if (is_array($source_directories)) {
-            foreach ($source_directories as $directory) {
-                $options[] = array($directory['path'], true, $directory['name']);
+            foreach ($source_directories as $path => $directory) {
+                $options[] = array($path, true, $directory['name']);
             }
         }
         $fieldset->appendChild(

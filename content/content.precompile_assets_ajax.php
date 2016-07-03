@@ -1,6 +1,6 @@
 <?php
 
-//require_once EXTENSIONS . '/asset_pipeline/lib/defines.php';
+require_once EXTENSIONS . '/asset_pipeline/lib/defines.php';
 require_once EXTENSIONS . '/asset_pipeline/lib/pipeline.php';
 
 use asset_pipeline\AP;
@@ -34,6 +34,7 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                 $listing = Pipeline::getRecursiveFileList($source_dir_abs);
                 foreach ($listing as $file) {
                     $source_file_abs = $source_dir_abs . '/' . $file;
+                    if (!file_exists($source_file_abs)) continue;
                     $md5 = md5_file($source_file_abs);
                     $output_file = Pipeline::filenameInsertMD5($file, $md5);
                     $output_file_abs = AP\OUTPUT_DIR . '/' . $output_file;
@@ -59,6 +60,7 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                         $input_type = General::getExtension($file);
                         if (Pipeline::getOutputType($input_type) != $type) continue;
                         $source_file_abs = $source_dir_abs . '/' . $file;
+                        if (!file_exists($source_file_abs)) continue;
                         $output = Pipeline::$processCode($source_file_abs);
                         Pipeline::deleteCompiledFile($file); // Delete previous compilation, if any
                         $md5 = md5($content);
@@ -86,7 +88,6 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                 // Remove line breaks & tabs
                 $buffer = str_replace(array("\r\n", "\r", "\n", "\t"), '', $buffer);
                 // Collapse adjacent spaces into a single space
-                //$buffer = ereg_replace(" {2,}", ' ',$buffer);
                 $buffer = preg_replace('/\s{2,}/', ' ', $buffer);
                 // Remove spaces that might still be left where we know they aren't needed
                 $buffer = str_replace(array('} '), '}', $buffer);

@@ -10,6 +10,7 @@ function define_here($name, $value)
 }
 
 define_here('ID', 'asset_pipeline');
+//define_here('SOURCE_DIRECTORIES', ID . '_source_directories');
 
 $self_manifest = MANIFEST . '/' . ID;
 define_here('SOURCE_DIRECTORIES', $self_manifest . '/source-directories.php');
