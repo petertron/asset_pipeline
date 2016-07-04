@@ -5,7 +5,7 @@
     <repo type="github">https://github.com/Petertron/asset_pipeline</repo>
     <!--<url type="discuss">http://getsymphony.com/discuss/thread/</url>-->
     <types>
-        <type>Asset compilation</type>
+        <type>Asset processing</type>
     </types>
     <authors>
         <author>
@@ -15,7 +15,7 @@
         </author>
     </authors>
     <releases>
-        <release version="0.1.0" date="2016-05-30" min="2.5.2" max="3.0.0">
+        <release version="0.1.0" date="2016-06-05" min="2.5.2" max="3.0.0">
             - Initial release.
         </release>
     </releases>
