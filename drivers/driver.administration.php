@@ -284,14 +284,22 @@ class extension_Asset_pipeline extends Extension
         foreach ($source_directories as $position => $directory) {
             //$string .= PHP_EOL . $spacer . "########";
             $path = trim($directory['path'], '/');
-            General::realiseDirectory(WORKSPACE . '/' . $path);
             $type = $directory['type'];
+            $dir_abs = WORKSPACE . '/' . $path;
+
             $string .= PHP_EOL . $spacer . "'$path' => array(";
             $string .= PHP_EOL . $spacer . $spacer . "'name' => '" .
                 addslashes($directory['name']) . "',";
             $string .= PHP_EOL . $spacer . $spacer . "'type' => '$type',";
 
             if (self::isCodeType($type)) {
+                // Create directory if it does not exist
+                if (!is_dir($dir_abs)) {
+                    General::realiseDirectory($dir_abs);
+                    $file = "/manifest.example.$type";
+                    copy(EXTENSIONS . '/asset_pipeline/assets' . $file, $dir_abs . $file);
+                }
+
                 $string .= PHP_EOL . $spacer . $spacer . "'precompile_files' => array(";
                 $precompile_files = trim($directory['precompile_files']);
                 if ($precompile_files) {
@@ -303,7 +311,10 @@ class extension_Asset_pipeline extends Extension
                     }
                 }
                 $string = rtrim($string, ',') . "),";
+            } else {
+                General::realiseDirectory($dir_abs);
             }
+
             $string .= PHP_EOL . $spacer . ")," . PHP_EOL;
             //$string .= PHP_EOL . $spacer . "########" . PHP_EOL;
         }
