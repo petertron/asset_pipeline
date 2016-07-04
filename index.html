@@ -1,0 +1,72 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Asset Pipeline for Symphony CMS</title><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Hind+Madurai"><link rel="stylesheet" href="/styles.css"></head><body><div class="content-wrap"><article><header class="article-header"><h1>Asset Pipeline</h1><h2>An extension for Symphony CMS</h2></header><h2 id="features">Features</h2>
+<ul>
+<li>Concatenation and minification of CSS and JavaScript files.</li>
+<li>Compilation of languages such as Sass or CoffeeScript into CSS or Javascript.</li>
+<li>Adding MD5 &#39;fingerprinting&#39; to file names.</li>
+<li>Insertion of asset URLs into output HTML.</li>
+</ul>
+<hr>
+<h2 id="github-repository">GitHub repository</h2>
+<p><a href="https://github.com/Petertron/asset_pipeline/">https://github.com/Petertron/asset_pipeline/</a>.</p>
+<hr>
+<h2 id="installing-asset-pipeline">Installing Asset Pipeline</h2>
+<p>To install a Symphony extension <a href="http://www.getsymphony.com/learn/tasks/view/install-an-extension/">see the instructions</a> on the Symphony website.</p>
+<p>Once the extension is installed it needs to be prepared for use. Go to <em>System -&gt; Preferences</em> so that you can set up the source directories and an output directory for your assets.</p>
+<hr>
+<h2 id="directories">Directories</h2>
+<p>The directories where assets are held are defined on Symphony&#39;s <em>Preferences</em> page.</p>
+<h3 id="source-directories">Source directories</h3>
+<p>There are three types of source directory: stylesheet, script and non-code. For stylesheet and script directories it is necessary to specify which files are to be precompiled. With non-code directories all files will be precompiled.</p>
+<h3 id="the-output-directory">The output directory</h3>
+<p>This is the place where precompiled assets are placed so that they can be served directly by the web server.</p>
+<hr>
+<h2 id="asset-compilation-on-page-load">Asset compilation on page load</h2>
+<p>On page load, Asset Pipeline processes any assets that have not been precompiled. CSS and JS files are concatenated (if specified) but are not minified.</p>
+<hr>
+<h2 id="precompilation">Precompilation</h2>
+<p>Compilation on page-load is good during development, but unwise for a finished website. To precompile assets select <em>System -&gt; Precompile Assets</em> on the navigation panel. The precompilation process produces files that are &#39;fingerprinted&#39;, with minification applied to code files.</p>
+<hr>
+<h2 id="fingerprinting">Fingerprinting</h2>
+<p>The purpose of fingerprinting is to ensure that the latest version of a file is served rather than a cached version. Asset Pipeline does this by adding an MD5 hash to the filename.</p>
+<hr>
+<h2 id="manifest-files">Manifest files</h2>
+<p>A manifest file holds a list of files to be bundled into one file.</p>
+<p>Here is an example CSS manifest file:</p>
+<pre><code class="lang-css"><span class="comment">/*
+ * CSS manifest file
+ *
+ *= include main.less
+ *= include home.less
+ *= include blog.less
+ */</span>
+</code></pre>
+<p>Here is an example JS manifest file:</p>
+<pre><code class="lang-js"><span class="comment">//</span>
+<span class="comment">// JS manifest file</span>
+<span class="comment">//</span>
+<span class="comment">//= include main.coffee</span>
+<span class="comment">//= include buttons.coffee</span>
+</code></pre>
+<hr>
+<h2 id="using-the-pipeline-in-xsl-stylesheets">Using the pipeline in XSL stylesheets</h2>
+<p>Asset Pipeline has a namespace that must be specified in any stylesheets that invoke the pipeline.</p>
+<pre><code class="lang-xsl"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"UTF-8"</span><span class="meta">?&gt;</span></span>
+<span class="tag">&lt;<span class="name">xsl:stylesheet</span> <span class="attr">version</span>=<span class="string">"1.0"</span>
+    <span class="attr">xmlns:xsl</span>=<span class="string">"http://www.w3.org/1999/XSL/Transform"</span>
+    <span class="attr">xmlns:ap</span>=<span class="string">"http://Petertron.github.io/asset_pipeline"</span>
+    <span class="attr">exclude-result-prefixes</span>=<span class="string">"ap"</span>&gt;</span>
+</code></pre>
+<p>Files are specified using the <code>url-for</code> function.</p>
+<pre><code class="lang-xsl"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">"stylesheet"</span> <span class="attr">href</span>=<span class="string">"{ap:url-for('application.css')}"</span>/&gt;</span>
+</code></pre>
+<p>The link tag above will be rendered as</p>
+<pre><code>&lt;link rel=&quot;stylesheet&quot; href=&quot;/application.css/?mode=pipeline&quot;/&gt;
+</code></pre><p>If the file <code>application.css</code> has been precompiled then the link tag will look like this:</p>
+<pre><code>&lt;link rel=&quot;stylesheet&quot; href=&quot;/workspace/assets/application-908e25f4bf641868d8683022a5b62f54.css&quot;/&gt;
+</code></pre><p>The file name specified is the name of the <em>source file</em>, even if the file has been precompiled.
+Consider the following script tag:</p>
+<pre><code class="lang-xsl"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span> <span class="attr">src</span>=<span class="string">"{ap:url-for('player.coffee')}"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span>
+</code></pre>
+<p>In production, the above line will be rendered as</p>
+<pre><code>&lt;script type=&quot;text/javascript&quot; src=&quot;/workspace/assets/player-4dd5b109ee3439da54f5bdfd78a80473.js&quot;&gt;&lt;/script&gt;
+</code></pre></article></div></body></html>
