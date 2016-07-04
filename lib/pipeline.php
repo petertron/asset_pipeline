@@ -119,12 +119,13 @@ class Pipeline
         $output_file = ($output_type == $input_type) ?
             $file : self::replaceExtension($file, $output_type);
         $output_file_abs = AP\CACHE . '/' . $output_file;
+        General::realiseDirectory(dirname($output_file_abs));
         if ($output_type == 'css') {
             $output = self::processCSS($source_file_abs);
             file_put_contents($output_file_abs, $output);
         } elseif ($output_type == 'js') {
             $output = self::processJS($source_file_abs);
-            file_put_contents($output_file_abs, $output);
+            General::writeFile($output_file_abs, $output);
         } else {
             symlink($source_file_abs, $output_file_abs);
         }

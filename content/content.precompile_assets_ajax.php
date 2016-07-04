@@ -38,6 +38,7 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                     $md5 = md5_file($source_file_abs);
                     $output_file = Pipeline::filenameInsertMD5($file, $md5);
                     $output_file_abs = AP\OUTPUT_DIR . '/' . $output_file;
+                    General::realiseDirectory(basename($output_file_abs));
                     copy ($source_file_abs, $output_file_abs);
                     Pipeline::registerCompiledFile($file, $output_file);
                     $this->_output['html'] .= "$output_file<br>";
@@ -64,10 +65,14 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                         $output = Pipeline::$processCode($source_file_abs);
                         Pipeline::deleteCompiledFile($file); // Delete previous compilation, if any
                         $md5 = md5($content);
-                        $output_file = Pipeline::filenameInsertMD5($file, $md5);
+                        $output_file = Pipeline::filenameInsertMD5(
+                            Pipeline::replaceExtension($file, $type), $md5
+                        );
                         $output_file_abs = AP\OUTPUT_DIR . '/' . $output_file;
                         $output = self::minify($output, $type);
-                        file_put_contents($output_file_abs, $output);
+                        General::realiseDirectory(dirname($output_file_abs));
+                        General::writeFile($output_file_abs, $output);
+                        //file_put_contents($output_file_abs, $output);
                         Pipeline::registerCompiledFile($file, $output_file);
                         $this->_output['html'] .= "$output_file<br>";
                     }
