@@ -105,6 +105,9 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                 $buffer = str_replace(array(' ,'), ',', $buffer);
                 break;
             case 'js':
+                $buffer = preg_replace("/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/", "", $buffer);
+                $buffer = str_replace(["\r\n","\r","\t","\n",'  ','    ','     '], '', $buffer);
+                $buffer = preg_replace(['(( )+\))','(\)( )+)'], ')', $buffer);
                 break;
         }
 
