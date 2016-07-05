@@ -147,8 +147,14 @@ class Pipeline
             if (self::getOutputType($input_type) == 'css') {
                 $driver = self::getDriver($input_type);
                 $result = $driver->compile($content, $dir_path);
-                //$result = call_user_func("asset_pipeline\\$input_type\\compile", $content, $dir_path);
-                $content = $result['content'];
+                if (isset($result['error'])) {
+                    echo __('CSS compilation error') . "<br><br>";
+                    echo __('Source file: ') . $source_path_abs. "<br><br>";
+                    echo __('Compiler message: ') . $result['error'];
+                    exit;
+                }
+
+                $content = $result['output'];
             } else {
                 return false; // Invalid input type
             }
@@ -196,7 +202,13 @@ class Pipeline
             if (self::getOutputType($input_type) == 'js') {
                 $driver = self::getDriver($input_type);
                 $result = $driver->compile($body, $dir_path);
-                $body = $result['content'];
+                if (isset($result['error'])) {
+                    echo __('JavaScript compilation error') . "<br><br>";
+                    echo __('Source file: ') . $source_path_abs. "<br><br>";
+                    echo __('Compiler message: ') . $result['error'];
+                    exit;
+                }
+                $body = $result['output'];
             }
         } else {
             return false; // Invalid input type
