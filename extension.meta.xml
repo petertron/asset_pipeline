@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<extension id="asset_pipeline" status="unreleased" xmlns="http://getsymphony.com/schemas/extension/1.0">
+<extension id="asset_pipeline" status="released" xmlns="http://getsymphony.com/schemas/extension/1.0">
     <name>Asset Pipeline</name>
-    <description>An advanced system for compiling assets.</description>
+    <description>A system for processing assets.</description>
     <repo type="github">https://github.com/Petertron/asset_pipeline</repo>
     <!--<url type="discuss">http://getsymphony.com/discuss/thread/</url>-->
     <types>
-        <type>Asset processing</type>
+        <type>Other</type>
     </types>
     <authors>
         <author>

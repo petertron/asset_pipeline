@@ -19,7 +19,7 @@ class extension_Asset_Pipeline extends Extension
         $doc->loadXML($context['xsl']);
         //$doc->formatOutput = TRUE;
         $doc->createAttributeNS('http://exslt.org/functions', 'func:function');
-        $doc->createAttributeNS('http://Petertron.github.io/asset_pipeline', 'ap:url-for');
+        $doc->createAttributeNS('http://petertron.github.io/asset_pipeline', 'ap:url-for');
         $doc->createAttributeNS('http://php.net/xsl', 'php:functionString');
         $stylesheet = $doc->firstChild;
         $stylesheet->setAttribute('extension-element-prefixes', 'func');

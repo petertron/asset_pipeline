@@ -378,7 +378,7 @@ class extension_Asset_pipeline extends Extension
 
         // Path
         $label = Widget::Label(__('Path<i>Path relative to Workspace</i>'), null, 'column');
-        $label->appendChild(Widget::Input("asset_pipeline[source_directories][{$position}][path]", $values['path']));
+        $label->appendChild(Widget::Input("asset_pipeline[source_directories][$position][path]", $values['path']));
         if (isset($errors['path'])) {
             $group->appendChild(Widget::Error($label, $errors['path']));
         } else {
