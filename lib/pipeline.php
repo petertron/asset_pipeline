@@ -168,7 +168,7 @@ class Pipeline
                 while ($line) {
                     $line = trim(ltrim(trim($line), '*'));
                     if (substr($line, 0, 1) == '=') {
-                        $line = preg_split('/\s+/', ltrim(substr($line, 2)));
+                        $line = preg_split('/\s+/', ltrim(substr($line, 1)));
                         if ($line[0] == 'require') {
                             $requires[] = $line[1];
                         }
@@ -199,40 +199,37 @@ class Pipeline
         if ($input_type != 'js') {
             if (self::getOutputType($input_type) == 'js') {
                 $driver = self::getDriver($input_type);
-                $result = $driver->compile($body, $dir_path);
+                $result = $driver->compile($body);
                 if (isset($result['error'])) {
                     echo __('JavaScript compilation error') . "<br><br>";
                     echo __('Source file: ') . $source_path_abs. "<br><br>";
                     echo __('Compiler message: ') . $result['error'];
                     exit;
                 }
-                $body = $result['output'];
-            }
-        } else {
-            return false; // Invalid input type
-        }
 
+                $body = $result['output'];
+            } else {
+                return false; // Invalid input type
+            }
+        }
         $requires = array();
 
-        while (substr($body, 0, 2) == '//') {
-            $line_end = strpos($body, PHP_EOL, 2);
-            if (is_numeric($line_end)) {
-                $line = substr($body, 2, $line_end);
-                $body = substr($body, $line_end + 1);
-            } else {
-                $line = $body;
-                $body = '';
-            }
-
+        $line = strtok($body, "\r\n");
+        while ($line) {
+            $line = trim($line);
+            if (substr($line, 0, 2) != '//') break;
+            $line = trim(substr($line, 2));
             if (substr($line, 0, 1) == '=') {
-                $line = preg_split('/\s+/', ltrim(substr($line, 2)));
+                $line = preg_split('/\s+/', ltrim(substr($line, 1)));
                 if ($line[0] == 'require') {
                     $requires[] = $line[1];
                 }
             }
+            $line = strtok("\r\n");
         }
 
         if(!empty($requires)) {
+            $body = '';
             foreach ($requires as $file) {
                 $output .= $this_method($dir_path . '/' . $file);
             }
@@ -334,3 +331,25 @@ class Pipeline
         }
     }
 }
+
+/*
+        while (substr($body, 0, 2) == '//') {
+            $line_end = strpos($body, "\n");
+            if (is_numeric($line_end)) {
+                $line = substr($body, 2, $line_end);
+                $body = substr($body, $line_end + 1);
+            } else {
+                $line = $body;
+                $body = '';
+            }
+
+            if (substr($line, 0, 1) == '=') {
+            echo $line; die;
+                $line = preg_split('/\s+/', ltrim(substr($line, 2)));
+                if ($line[0] == 'require') {
+                    $requires[] = $line[1];
+                    echo $line[1];die;
+                }
+            }
+        }
+*/
