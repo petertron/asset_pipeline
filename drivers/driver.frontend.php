@@ -4,6 +4,7 @@
 
 require_once EXTENSIONS . '/asset_pipeline/lib/pipeline.php';
 
+use asset_pipeline\AP;
 use asset_pipeline\Pipeline;
 
 class extension_Asset_Pipeline extends Extension
@@ -37,8 +38,8 @@ class extension_Asset_Pipeline extends Extension
         $stylesheet->appendChild($func_function);
 
         $context['xsl'] = $doc->saveXML();
-
         Pipeline::initialise();
+        Pipeline::clearDirectory(AP\CACHE);
         //echo htmlspecialchars($context['xsl']);die;
     }
 }

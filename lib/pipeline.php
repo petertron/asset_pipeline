@@ -112,8 +112,6 @@ class Pipeline
         }
         if (!$file_found) return null;
 
-        self::clearDirectory(AP\CACHE);
-
         $input_type = General::getExtension($source_file_abs);
         $output_type = self::getOutputType($input_type);
         $output_file = ($output_type == $input_type) ?
