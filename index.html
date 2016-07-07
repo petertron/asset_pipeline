@@ -35,17 +35,17 @@
 <pre><code class="lang-css"><span class="comment">/*
  * CSS manifest file
  *
- *= include main.less
- *= include home.less
- *= include blog.less
+ *= require main.less
+ *= require home.less
+ *= require blog.less
  */</span>
 </code></pre>
 <p>Here is an example JS manifest file:</p>
 <pre><code class="lang-js"><span class="comment">//</span>
 <span class="comment">// JS manifest file</span>
 <span class="comment">//</span>
-<span class="comment">//= include main.coffee</span>
-<span class="comment">//= include buttons.coffee</span>
+<span class="comment">//= require main.coffee</span>
+<span class="comment">//= require buttons.coffee</span>
 </code></pre>
 <hr>
 <h2 id="using-the-pipeline-in-xsl-stylesheets">Using the pipeline in XSL stylesheets</h2>
@@ -69,4 +69,12 @@ Consider the following script tag:</p>
 </code></pre>
 <p>In production, the above line will be rendered as</p>
 <pre><code>&lt;script type=&quot;text/javascript&quot; src=&quot;/workspace/assets/player-4dd5b109ee3439da54f5bdfd78a80473.js&quot;&gt;&lt;/script&gt;
-</code></pre></article></div></body></html>
+</code></pre><h2 id="plugins">Plugins</h2>
+<p>There is a set of additional extensions which provide language preprocessors.</p>
+<ul>
+<li><a href="https://github.com/Petertron/asset_pipeline_less/">Asset Pipeline Less Compiler</a> Requires Node.js to be installed.</li>
+<li><a href="https://github.com/Petertron/asset_pipeline_scss/">Asset Pipeline SCSS Compiler</a> Compiles Sass CSS.</li>
+<li><a href="https://github.com/Petertron/asset_pipeline_coffeescript/">Asset Pipeline CoffeeScript Compiler</a> Requires Node.js to be installed.</li>
+<li><a href="https://github.com/Petertron/asset_pipeline_livescript/">Asset Pipeline LiveScript Compiler</a> Requires Node.js to be installed.</li>
+</ul>
+</article><br></div></body></html>
