@@ -145,10 +145,12 @@ class Pipeline
             if (self::getOutputType($input_type) == 'css') {
                 $driver = self::getDriver($input_type);
                 $result = $driver->compile($content, $dir_path);
-                if (isset($result['error'])) {
-                    echo __('CSS compilation error') . "<br><br>";
-                    echo __('Source file: ') . $source_path_abs. "<br><br>";
-                    echo __('Compiler message: ') . $result['error'];
+                if (APP_MODE == 'frontend' && isset($result['error'])) {
+                    echo self::renderErrorTemplate(
+                        basename($source_path_abs),
+                        $source_path_abs,
+                        $result['error']
+                    );
                     exit;
                 }
 
@@ -200,10 +202,12 @@ class Pipeline
             if (self::getOutputType($input_type) == 'js') {
                 $driver = self::getDriver($input_type);
                 $result = $driver->compile($body);
-                if (isset($result['error'])) {
-                    echo __('JavaScript compilation error') . "<br><br>";
-                    echo __('Source file: ') . $source_path_abs. "<br><br>";
-                    echo __('Compiler message: ') . $result['error'];
+                if (APP_MODE == 'frontend' && isset($result['error'])) {
+                    echo self::renderErrorTemplate(
+                        basename($source_path_abs),
+                        $source_path_abs,
+                        $result['error']
+                    );
                     exit;
                 }
 
@@ -329,6 +333,14 @@ class Pipeline
 
             return false;
         }
+    }
+
+    static function renderErrorTemplate($filename, $source_path_abs, $message)
+    {
+        $template = file_get_contents(
+            EXTENSIONS . '/asset_pipeline/content/preprocessor_error.tpl'
+        );
+        return sprintf($template, ASSETS_URL, $filename, $source_path_abs, $message);
     }
 }
 
