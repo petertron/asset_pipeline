@@ -135,7 +135,7 @@ class Pipeline
 
     public static function processCSS($source_path_abs)
     {
-        $this_method = __METHOD__;
+        $this_method = '//'.__METHOD__;
 
         $output = '';
         $dir_path = dirname($source_path_abs);
@@ -192,7 +192,7 @@ class Pipeline
 
     public static function processJS($source_path_abs)
     {
-        $this_method = __METHOD__;
+        $this_method = '//'.__METHOD__;
 
         $output = '';
         $dir_path = dirname($source_path_abs);
@@ -304,7 +304,7 @@ class Pipeline
 
     public static function clearDirectory($dir, $silent = true)
     {
-        $this_method = __METHOD__;
+        static $this_method = '\\'.__METHOD__;
 
         try {
             if (!file_exists($dir)) {
@@ -320,7 +320,7 @@ class Pipeline
                     continue;
                 }
 
-                if (!$this_method($dir.DIRECTORY_SEPARATOR.$item)) {
+                if (!$this_method($dir.DIRECTORY_SEPARATOR.$item, $silent)) {
                     return false;
                 }
             }
