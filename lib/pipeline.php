@@ -135,7 +135,7 @@ class Pipeline
 
     public static function processCSS($source_path_abs)
     {
-        $this_method = '//'.__METHOD__;
+        //$this_method = '//'.__METHOD__;
 
         $output = '';
         $dir_path = dirname($source_path_abs);
@@ -179,7 +179,8 @@ class Pipeline
                 }
                 if(!empty($requires)) {
                     foreach ($requires as $file) {
-                        $output .= $this_method($dir_path . '/' . $file);
+                        //$output .= $this_method($dir_path . '/' . $file);
+                        $output .= self::processCSS($dir_path . '/' . $file);
                     }
                 }
             }
@@ -192,7 +193,7 @@ class Pipeline
 
     public static function processJS($source_path_abs)
     {
-        $this_method = '//'.__METHOD__;
+        //$this_method = '//'.__METHOD__;
 
         $output = '';
         $dir_path = dirname($source_path_abs);
@@ -235,7 +236,8 @@ class Pipeline
         if(!empty($requires)) {
             $body = '';
             foreach ($requires as $file) {
-                $output .= $this_method($dir_path . '/' . $file);
+                //$output .= $this_method($dir_path . '/' . $file);
+                $output .= self::processJS($dir_path . '/' . $file);
             }
         }
 
@@ -304,7 +306,7 @@ class Pipeline
 
     public static function clearDirectory($dir, $silent = true)
     {
-        static $this_method = '\\'.__METHOD__;
+        //$this_method = '\\'.__METHOD__;
 
         try {
             if (!file_exists($dir)) {
@@ -320,7 +322,8 @@ class Pipeline
                     continue;
                 }
 
-                if (!$this_method($dir.DIRECTORY_SEPARATOR.$item, $silent)) {
+                //if (!$this_method($dir.DIRECTORY_SEPARATOR.$item, $silent)) {
+                if (!self::clearDirectory($dir . '/' . $item, $silent)) {
                     return false;
                 }
             }
