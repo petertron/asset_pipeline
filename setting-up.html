@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Asset Pipeline</title>
+        <title>Asset Pipeline: Setting Up</title>
 
         <link rel="stylesheet" href="http://petertron.github.io/asset_pipeline/css/bootstrap.min.css">
         <link rel="stylesheet" href="http://petertron.github.io/asset_pipeline/css/highlight.dark.css">
@@ -40,42 +40,12 @@
 
                 
                 <section id="content" class="col-sm-offset-3 col-lg-offset-2 col-sm-9 col-lg-10">
-                    <h2 id="summary-of-features">Summary of Features</h2>
-<ul>
-<li>Concatenation and minification of CSS and JavaScript files.</li>
-<li>Compilation of languages such as Sass or CoffeeScript into CSS or JavaScript.</li>
-<li>MD5 'fingerprinting' for output files.</li>
-<li>Insertion of asset URLs into output HTML.</li>
-</ul>
-<hr />
-<h2 id="downloads">Downloads</h2>
-<ul>
-<li>
-<h3 id="main-extension">Main extension</h3>
-<p><a href="https://github.com/Petertron/asset_pipeline/zipball/master.zip">Download ZIP</a> or <code>git clone https://github.com/Petertron/asset_pipeline.git</code></p>
-<p><a href="https://github.com/Petertron/asset_pipeline/">GitHub page</a></p>
-</li>
-<li>
-<h3 id="scss-compiler-plugin">SCSS Compiler plugin</h3>
-<p><a href="https://github.com/Petertron/asset_pipeline_scss/zipball/master.zip">Download ZIP</a> or <code>git clone https://github.com/Petertron/asset_pipeline_scss.git</code></p>
-<p><a href="https://github.com/Petertron/asset_pipeline_scss/">GitHub page</a></p>
-</li>
-<li>
-<h3 id="less-compiler-plugin-requires-nodejs">Less Compiler plugin (requires Node.js)</h3>
-<p><a href="https://github.com/Petertron/asset_pipeline_less/zipball/master.zip">Download ZIP</a> or <code>git clone https://github.com/Petertron/asset_pipeline_less.git</code></p>
-<p><a href="https://github.com/Petertron/asset_pipeline_less/">GitHub page</a></p>
-</li>
-<li>
-<h3 id="coffeescript-compiler-plugin-requires-nodejs">CoffeeScript Compiler plugin (requires Node.js)</h3>
-<p><a href="https://github.com/Petertron/asset_pipeline_coffeescript/zipball/master.zip">Download ZIP</a> or <code>git clone https://github.com/Petertron/asset_pipeline_coffeescript.git</code></p>
-<p><a href="https://github.com/Petertron/asset_pipeline_coffeescript/">GitHub page</a></p>
-</li>
-<li>
-<h3 id="livescript-compiler-plugin-requires-nodejs">LiveScript Compiler plugin (requires Node.js)</h3>
-<p><a href="https://github.com/Petertron/asset_pipeline_livescript/zipball/master.zip">Download ZIP</a> or <code>git clone https://github.com/Petertron/asset_pipeline_livescript.git</code></p>
-<p><a href="https://github.com/Petertron/asset_pipeline_livescript/">GitHub page</a></p>
-</li>
-</ul>
+                    <h1 id="setting-up">Setting Up</h1>
+<p>Before Asset Pipeline is ready to use it is necessary to create some directories. This is done by going to <em>System -&gt; Preferences</em>.</p>
+<h2 id="the-output-directory">The output directory</h2>
+<p>The output directory is not used for compiling assets on page load, but is used for storing asset files to be served when the website is in production.</p>
+<h2 id="source-directories">Source directories</h2>
+<p>There are three types of source directory: stylesheet, script and non-code. For stylesheet and script directories it is necessary to specify which files will be compiled when precompiling assets for production. With non-code directories all files will be precompiled.</p>
 <hr />
                 </section>
 

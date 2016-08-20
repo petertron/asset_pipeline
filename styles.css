@@ -242,3 +242,13 @@ code.lang-markdown .bullet {
     margin-bottom: 1em;
   }
 }
+
+td:first-child {
+  width: 160px;
+}
+td:first-child + td {
+  width: 108px;
+}
+td:first-child + td + td {
+  width: 108px;
+}

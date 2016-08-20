@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Asset Pipeline: Using</title>
+
+        <link rel="stylesheet" href="http://petertron.github.io/asset_pipeline/css/bootstrap.min.css">
+        <link rel="stylesheet" href="http://petertron.github.io/asset_pipeline/css/highlight.dark.css">
+        <link rel="stylesheet" href="http://petertron.github.io/asset_pipeline/css/main.css">
+    </head>
+    <body>
+
+        <main class="container-fluid">
+            <div class="row">
+
+                
+                    <nav id="sidebar" class="col-sm-3 col-lg-2" role="navigation">
+
+                        <ul class="nav nav-pills nav-stacked">
+                                                            <li class="">
+                                    <a href="http://petertron.github.io/asset_pipeline/">
+                                        Home
+                                    </a>
+                                </li>
+                                                            <li class="">
+                                    <a href="http://petertron.github.io/asset_pipeline/setting-up.html">
+                                        Setting Up
+                                    </a>
+                                </li>
+                                                            <li class="">
+                                    <a href="http://petertron.github.io/asset_pipeline/using.html">
+                                        Using
+                                    </a>
+                                </li>
+                                                    </ul>
+
+                    </nav>
+
+                
+                <section id="content" class="col-sm-offset-3 col-lg-offset-2 col-sm-9 col-lg-10">
+                    <h1 id="using-the-asset-pipeline">Using the asset pipeline</h1>
+<h2 id="action-on-page-load">Action on page load</h2>
+<p>For each asset file, the pipeline checks whether there is a precompiled version, that is, a file that has been specially compiled for production. If there is no precompiled version then Asset Pipeline processes the source file if there is any processing to be done.</p>
+<h2 id="invoking-the-pipeline-in-xsl-stylesheets">Invoking the pipeline in XSL stylesheets</h2>
+<p>Asset Pipeline has a namespace that must be specified in any stylesheets that use the pipeline.</p>
+<pre><code class="language-xsl">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ap="http://petertron.github.io/asset_pipeline"
+    exclude-result-prefixes="ap"&gt;</code></pre>
+<p>Files are specified using the <code>url-for</code> function.</p>
+<pre><code class="language-xsl">&lt;link rel="stylesheet" href="{ap:url-for('styles.css')}"/&gt;</code></pre>
+<p>Note that there is no need to specify the name of the directory that the file is in.</p>
+<p>The link tag above will be rendered as</p>
+<pre><code>&lt;link rel="stylesheet" href="/styles.css/?mode=pipeline"/&gt;</code></pre>
+<p>If the file <code>styles.css</code> has been precompiled then the link tag will look like this:</p>
+<pre><code>&lt;link rel="stylesheet" href="/workspace/assets/styles-908e25f4bf641868d8683022a5b62f54.css"/&gt;</code></pre>
+<p>The file name specified is the name of the <em>source file</em>, even if the file has been precompiled.
+Consider the following script tag:</p>
+<pre><code class="language-xsl">&lt;script type="text/javascript" src="{ap:url-for('player.coffee')}"&gt;&lt;/script&gt;
+</code></pre>
+<p>In production, the above line will be rendered as</p>
+<pre><code>&lt;script type="text/javascript" src="/workspace/assets/player-4dd5b109ee3439da54f5bdfd78a80473.js"&gt;&lt;/script&gt;</code></pre>
+<hr />
+<h2 id="precompiling-assets-for-production">Precompiling assets for production.</h2>
+<p>Compilation on page-load is good during development, but unwise for a finished website. To precompile assets select <em>System -&gt; Precompile Assets</em> on the navigation panel. The precompilation process produces files that are 'fingerprinted', with minification applied to code files.</p>
+<hr />
+<h2 id="fingerprinting">Fingerprinting</h2>
+<p>When files are precompiled, the filename includes an MD5 hash. This is known as <em>fingerprinting</em>, the idea being that the file's exact name depends on its contents. The purpose of fingerprinting is to ensure that the latest version of a file is served rather than a cached version.</p>
+<hr />
+<h2 id="manifest-files">Manifest files</h2>
+<p>A manifest file holds a list of files to be bundled into one file.</p>
+<p>Here is an example CSS manifest file:</p>
+<pre><code class="language-css">/*
+ * CSS manifest file
+ *
+ *= require main.less
+ *= require home.less
+ *= require blog.less
+ */</code></pre>
+<p>Here is an example JS manifest file:</p>
+<pre><code class="language-js">//
+// JS manifest file
+//
+//= require main.coffee
+//= require buttons.coffee</code></pre>
+<hr />
+                </section>
+
+            </div>
+        </main>
+
+        <footer>
+            <div class="container-fluid">
+                <p class="text-muted">
+                    website generated with <a href="http://couscous.io" title="Markdown website generator">Couscous</a>
+                </p>
+            </div>
+        </footer>
+
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <script src="//yastatic.net/highlightjs/8.2/highlight.min.js"></script>
+
+        <script>
+            $(function() {
+                $("section>h1").wrap('<div class="page-header" />');
+                // Syntax highlighting
+                hljs.initHighlightingOnLoad();
+            });
+        </script>
+
+    </body>
+</html>
