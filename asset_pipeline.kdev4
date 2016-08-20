@@ -1,0 +1,4 @@
+[Project]
+Name=asset_pipeline
+Manager=KDevGenericManager
+VersionControl=kdevgit
