@@ -63,13 +63,13 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                         $source_file_abs = $source_dir_abs . '/' . $file;
                         if (!file_exists($source_file_abs)) continue;
                         $output = Pipeline::$processCode($source_file_abs);
+                        $output = self::minify($output, $type);
                         Pipeline::deleteCompiledFile($file); // Delete previous compilation, if any
                         $md5 = md5($output);
                         $output_file = Pipeline::filenameInsertMD5(
                             Pipeline::replaceExtension($file, $type), $md5
                         );
                         $output_file_abs = AP\OUTPUT_DIR . '/' . $output_file;
-                        $output = self::minify($output, $type);
                         General::realiseDirectory(dirname($output_file_abs));
                         General::writeFile($output_file_abs, $output);
                         //file_put_contents($output_file_abs, $output);
