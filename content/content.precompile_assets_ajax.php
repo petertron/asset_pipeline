@@ -64,7 +64,7 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                         if (!file_exists($source_file_abs)) continue;
                         $output = Pipeline::$processCode($source_file_abs);
                         Pipeline::deleteCompiledFile($file); // Delete previous compilation, if any
-                        $md5 = md5($content);
+                        $md5 = md5($output);
                         $output_file = Pipeline::filenameInsertMD5(
                             Pipeline::replaceExtension($file, $type), $md5
                         );
