@@ -38,7 +38,7 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                     $md5 = md5_file($source_file_abs);
                     $output_file = Pipeline::filenameInsertMD5($file, $md5);
                     $output_file_abs = AP\OUTPUT_DIR . '/' . $output_file;
-                    General::realiseDirectory(basename($output_file_abs));
+                    General::realiseDirectory(dirname($output_file_abs));
                     copy ($source_file_abs, $output_file_abs);
                     Pipeline::registerCompiledFile($file, $output_file);
                     $this->_output['html'] .= "$output_file<br>";
