@@ -1,11 +1,8 @@
 (function($) {
     var page_url;
-        //xsrf,
 
     $(document).ready(function() {
         page_url = Symphony.Context.get('symphony') + Symphony.Context.get('route');
-        //xsrf = serialize($('form input[name="xsrf"]'));
-        //xsrf = $('form input[name="xsrf"]').serialize();
 
         $('form').submit(function(event) {
             event.preventDefault();
@@ -19,8 +16,8 @@
                     //with_selected.options[0].selected = true;
                     //$('.actions fieldset.apply').addClass('inactive');
                 },
-                error: function() {
-                    alert("Error");
+                error: function(jqXHR, error) {
+                    alert(error);
                 },
                 dataType: 'json',
             });

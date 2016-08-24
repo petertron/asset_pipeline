@@ -47,12 +47,10 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
 
             // Compile code files
 
-            $processors = array('css' => 'processCSS', 'js' => 'processJS');
             foreach ($items as $dir_path) {
                 $directory = $source_directories[$dir_path];
                 $type = $directory['type'];
                 if (!Pipeline::isCodeType($type)) continue;
-                //if (!array_key_exists($type, $processors)) continue;
                 $source_dir_abs = WORKSPACE . '/' . $dir_path;
                 $to_compile = $directory['precompile_files'];
                 $processCode = $processors[$type];
@@ -62,8 +60,14 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                         if (Pipeline::getOutputType($input_type) != $type) continue;
                         $source_file_abs = $source_dir_abs . '/' . $file;
                         if (!file_exists($source_file_abs)) continue;
-                        $output = Pipeline::$processCode($source_file_abs);
-                        $output = self::minify($output, $type);
+                        switch ($type) {
+                            case 'css':
+                            $output = self::MinifyCSS(Pipeline::processCSS($source_file_abs));
+                            break;
+                            case 'js':
+                            $output = self::MinifyJS(Pipeline::processJS($source_file_abs));
+                            break;
+                        }
                         Pipeline::deleteCompiledFile($file); // Delete previous compilation, if any
                         $md5 = md5($output);
                         $output_file = Pipeline::filenameInsertMD5(
@@ -72,7 +76,6 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                         $output_file_abs = AP\OUTPUT_DIR . '/' . $output_file;
                         General::realiseDirectory(dirname($output_file_abs));
                         General::writeFile($output_file_abs, $output);
-                        //file_put_contents($output_file_abs, $output);
                         Pipeline::registerCompiledFile($file, $output_file);
                         $this->_output['html'] .= "$output_file<br>";
                     }
@@ -83,34 +86,32 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
         }
     }
 
-    static function minify($buffer, $type)
+    static function minifyCSS($buffer)
     {
-        switch ($type) {
-            case 'css':
-                $buffer = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $buffer);
-                // Remove space after colons
-                $buffer = str_replace(': ', ':', $buffer);
-                // Remove line breaks & tabs
-                $buffer = str_replace(array("\r\n", "\r", "\n", "\t"), '', $buffer);
-                // Collapse adjacent spaces into a single space
-                $buffer = preg_replace('/\s{2,}/', ' ', $buffer);
-                // Remove spaces that might still be left where we know they aren't needed
-                $buffer = str_replace(array('} '), '}', $buffer);
-                $buffer = str_replace(array('{ '), '{', $buffer);
-                $buffer = str_replace(array('; '), ';', $buffer);
-                $buffer = str_replace(array(', '), ',', $buffer);
-                $buffer = str_replace(array(' }'), '}', $buffer);
-                $buffer = str_replace(array(' {'), '{', $buffer);
-                $buffer = str_replace(array(' ;'), ';', $buffer);
-                $buffer = str_replace(array(' ,'), ',', $buffer);
-                break;
-            case 'js':
-                $buffer = preg_replace("/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/", "", $buffer);
-                $buffer = str_replace(["\r\n","\r","\t","\n",'  ','    ','     '], '', $buffer);
-                $buffer = preg_replace(['(( )+\))','(\)( )+)'], ')', $buffer);
-                break;
-        }
+        $buffer = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $buffer);
+        // Remove space after colons
+        $buffer = str_replace(': ', ':', $buffer);
+        // Remove line breaks & tabs
+        $buffer = str_replace(array("\r\n", "\r", "\n", "\t"), '', $buffer);
+        // Collapse adjacent spaces into a single space
+        $buffer = preg_replace('/\s{2,}/', ' ', $buffer);
+        // Remove spaces that might still be left where we know they aren't needed
+        $buffer = str_replace(array('} '), '}', $buffer);
+        $buffer = str_replace(array('{ '), '{', $buffer);
+        $buffer = str_replace(array('; '), ';', $buffer);
+        $buffer = str_replace(array(', '), ',', $buffer);
+        $buffer = str_replace(array(' }'), '}', $buffer);
+        $buffer = str_replace(array(' {'), '{', $buffer);
+        $buffer = str_replace(array(' ;'), ';', $buffer);
+        $buffer = str_replace(array(' ,'), ',', $buffer);
+        return $buffer;
+    }
 
+    static function minifyJS($buffer)
+    {
+        $buffer = preg_replace("/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/", "", $buffer);
+        $buffer = str_replace(["\r\n","\r","\t","\n",'  ','    ','     '], '', $buffer);
+        $buffer = preg_replace(['(( )+\))','(\)( )+)'], ')', $buffer);
         return $buffer;
     }
 

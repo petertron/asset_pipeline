@@ -120,7 +120,7 @@ class Pipeline
         General::realiseDirectory(dirname($output_file_abs));
         if ($output_type == 'css') {
             $output = self::processCSS($source_file_abs);
-            file_put_contents($output_file_abs, $output);
+            General::writeFile($output_file_abs, $output);
         } elseif ($output_type == 'js') {
             $output = self::processJS($source_file_abs);
             General::writeFile($output_file_abs, $output);
