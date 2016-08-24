@@ -177,7 +177,6 @@ class Pipeline
                 }
                 if(!empty($requires)) {
                     foreach ($requires as $file) {
-                        //$output .= $this_method($dir_path . '/' . $file);
                         $output .= self::processCSS($dir_path . '/' . $file);
                     }
                 }
@@ -232,7 +231,6 @@ class Pipeline
         if(!empty($requires)) {
             $body = '';
             foreach ($requires as $file) {
-                //$output .= $this_method($dir_path . '/' . $file);
                 $output .= self::processJS($dir_path . '/' . $file);
             }
         }
