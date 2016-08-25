@@ -9,7 +9,7 @@
             $.ajax({
                 type: 'POST',
                 url: page_url,
-                data: $(this).serialize() + '&action[submit]',
+                data: $(this).serialize() + '&action[submit]=1',
                 success: function(data) {
                     $('#compilation-log').html(data.html);
                     //$('#files-added').html(data.files_added);
