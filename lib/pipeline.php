@@ -116,18 +116,27 @@ class Pipeline
         $output_type = self::getOutputType($input_type);
         $output_file = ($output_type == $input_type) ?
             $file : self::replaceExtension($file, $output_type);
-        $output_file_abs = AP\CACHE . '/' . $output_file;
-        General::realiseDirectory(dirname($output_file_abs));
+        $code_file = false;
         if ($output_type == 'css') {
             $output = self::processCSS($source_file_abs);
-            General::writeFile($output_file_abs, $output);
+            $code_file = true;
         } elseif ($output_type == 'js') {
             $output = self::processJS($source_file_abs);
+            $code_file = true;
+        }
+        if ($code_file) {
+            $md5 = md5($output);
+        } else {
+            $md5 = md5_file($source_file_abs);
+        }
+        $output_file = self::filenameInsertMD5($output_file, $md5);
+        $output_file_abs = AP\CACHE . '/' . $output_file;
+        General::realiseDirectory(dirname($output_file_abs));
+        if ($code_file) {
             General::writeFile($output_file_abs, $output);
         } else {
             symlink($source_file_abs, $output_file_abs);
         }
-
         return "/$output_file/?mode=pipeline";
     }
 
