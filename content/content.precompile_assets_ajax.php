@@ -10,7 +10,7 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
 {
     public function __construct()
     {
-        $this->_output = array();
+        $this->_output = null;
         $this->error_occurred = false;
     }
 
@@ -23,7 +23,7 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
 
             $source_directories = include AP\SOURCE_DIRECTORIES;
 
-            $this->_output['html'] = "Files compiled:<br><br>";
+            $this->_output = "Files compiled:<br><br>";
 
             // Compile non-code files
 
@@ -41,7 +41,7 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                     General::realiseDirectory(dirname($output_file_abs));
                     copy ($source_file_abs, $output_file_abs);
                     Pipeline::registerCompiledFile($file, $output_file);
-                    $this->_output['html'] .= "$output_file<br>";
+                    $this->_output .= "$output_file<br>";
                 }
             }
 
@@ -77,7 +77,7 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                         General::realiseDirectory(dirname($output_file_abs));
                         General::writeFile($output_file_abs, $output);
                         Pipeline::registerCompiledFile($file, $output_file);
-                        $this->_output['html'] .= "$output_file<br>";
+                        $this->_output .= "$output_file<br>";
                     }
                 }
             }
@@ -117,8 +117,10 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
 
     public function generate($page = NULL)
     {
-        header('Content-Type: text/javascript');
-        echo json_encode($this->_output);
+        //header('Content-Type: text/javascript');
+        //echo json_encode($this->_output);
+        header('Content-Type: text/html');
+        echo $this->_output;
         exit();
     }
 
