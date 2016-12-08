@@ -145,6 +145,8 @@ class Pipeline
     public static function processCSS($source_path_abs)
     {
         $output = '';
+        if (!is_file($source_path_abs)) return $output;
+
         $dir_path = dirname($source_path_abs);
         $content = file_get_contents($source_path_abs);
         $input_type = General::getExtension($source_path_abs);
@@ -200,6 +202,8 @@ class Pipeline
     public static function processJS($source_path_abs)
     {
         $output = '';
+        if (!is_file($source_path_abs)) return $output;
+
         $dir_path = dirname($source_path_abs);
         $body = file_get_contents($source_path_abs);
         $input_type = General::getExtension($source_path_abs);
