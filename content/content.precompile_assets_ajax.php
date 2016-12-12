@@ -110,8 +110,8 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
     static function minifyJS($buffer)
     {
         $buffer = preg_replace("/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/", "", $buffer);
-        $buffer = str_replace(["\r\n","\r","\t","\n",'  ','    ','     '], '', $buffer);
-        $buffer = preg_replace(['(( )+\))','(\)( )+)'], ')', $buffer);
+        $buffer = str_replace(array("\r\n","\r","\t","\n",'  ','    ','     '), '', $buffer);
+        $buffer = preg_replace(array('(( )+\))','(\)( )+)'), ')', $buffer);
         return $buffer;
     }
 
