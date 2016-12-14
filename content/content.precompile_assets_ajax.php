@@ -65,7 +65,8 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                             $output = self::MinifyCSS(Pipeline::processCSS($source_file_abs));
                             break;
                             case 'js':
-                            $output = self::MinifyJS(Pipeline::processJS($source_file_abs));
+                            //$output = self::MinifyJS(Pipeline::processJS($source_file_abs));
+                            $output = Pipeline::processJS($source_file_abs);
                             break;
                         }
                         Pipeline::deleteCompiledFile($file); // Delete previous compilation, if any
