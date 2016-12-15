@@ -66,7 +66,8 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
                             break;
                             case 'js':
                             //$output = self::MinifyJS(Pipeline::processJS($source_file_abs));
-                            $output = Pipeline::processJS($source_file_abs);
+                            require_once EXTENSIONS . '/asset_pipeline/lib/JSMin.php';
+                            $output = JSMin::minify(Pipeline::processJS($source_file_abs));
                             break;
                         }
                         Pipeline::deleteCompiledFile($file); // Delete previous compilation, if any
