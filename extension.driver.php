@@ -1,9 +1,8 @@
 <?php
 
-// APP_MODE is a Symphony 3 constant.
+require 'lib/defines.php';
+require 'lib/functions.php';
+
 define_safe('APP_MODE', isset($_GET['mode']) ? $_GET['mode'] : 'frontend');
 
-// Load driver.
-require __DIR__ . '/drivers/driver.' . APP_MODE . '.php';
-
-require __DIR__ . '/lib/defines.php';
+require 'drivers/driver.' . APP_MODE . '.php';

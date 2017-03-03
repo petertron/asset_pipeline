@@ -1,129 +1,83 @@
 <?php
 
-require_once EXTENSIONS . '/asset_pipeline/lib/defines.php';
-require_once EXTENSIONS . '/asset_pipeline/lib/pipeline.php';
+//require_once EXTENSIONS . '/asset_pipeline/lib/functions.php';
+require_once EXTENSIONS . '/asset_pipeline/lib/stream/stream-setup.php';
 
-use asset_pipeline\AP;
-use asset_pipeline\Pipeline;
+use AssetPipeline as AP;
 
 class contentExtensionAsset_pipelinePrecompile_assets_ajax
 {
+    static $preprocessors = array();
+
     public function __construct()
     {
-        $this->_output = null;
+        Symphony::ExtensionManager()->notifyMembers(
+            'RegisterPreprocessors',
+            '/extension/asset_pipeline/',
+            array('preprocessors' => &self::$preprocessors)
+        );
+        $this->_output = 'Files compiled:<br><br>';
         $this->error_occurred = false;
     }
 
     public function build(array $context = array())
     {
-        Pipeline::initialise();
+        $this->doc_root = getcwd();
 
-        if (is_array($_POST['items'])) {
-            $items = $_POST['items'];
+        $files_compiled = array();
 
-            $source_directories = include AP\SOURCE_DIRECTORIES;
-
-            $this->_output = "Files compiled:<br><br>";
-
-            // Compile non-code files
-
-            foreach ($items as $dir_path) {
-                $directory = $source_directories[$dir_path];
-                if (in_array($directory['type'], array('css', 'js'))) continue;
-                $source_dir_abs = WORKSPACE . '/' . $dir_path;// . '/';
-                $listing = Pipeline::getRecursiveFileList($source_dir_abs);
-                foreach ($listing as $file) {
-                    $source_file_abs = $source_dir_abs . '/' . $file;
-                    if (!file_exists($source_file_abs)) continue;
-                    $md5 = md5_file($source_file_abs);
-                    $output_file = Pipeline::filenameInsertMD5($file, $md5);
+        // Compile non-code files.
+        $directories = new RecursiveDirectoryIterator(AP\SOURCE_FILES, FilesystemIterator::SKIP_DOTS);
+        foreach ($directories as $dir_path => $dir_info) {
+            chdir($dir_path);
+            $rdi = new RecursiveDirectoryIterator('./', FilesystemIterator::SKIP_DOTS);
+            $rii = new RecursiveIteratorIterator($rdi);
+            foreach ($rii as $file_path => $file_info) {
+                $file = substr($file_path, 2);
+                if (substr(mime_content_type($file), 0, 4) != 'text'
+                    && !array_key_exists($file, $files_compiled)) {
+                    $ext = General::getExtension($file_path);
+                    $md5 = md5_file($file);
+                    if ($ext) {
+                        $output_file = substr($file, 0, strrpos($file, '.')) . '-' . $md5 . '.' . $ext;
+                    } else {
+                        $output_file = $file . '-' . $md5;
+                    }
                     $output_file_abs = AP\OUTPUT_DIR . '/' . $output_file;
-                    General::realiseDirectory(dirname($output_file_abs));
-                    copy ($source_file_abs, $output_file_abs);
-                    Pipeline::registerCompiledFile($file, $output_file);
+                    $output_dir_abs = dirname($output_file_abs);
+                    if (!is_dir($output_dir_abs)) {
+                        General::realiseDirectory($output_dir_abs);
+                    }
+                    copy($file_path, $output_file_abs);
+                    $files_compiled[$file] = $output_file;
                     $this->_output .= "$output_file<br>";
                 }
             }
-
-            // Compile code files
-
-            foreach ($items as $dir_path) {
-                $directory = $source_directories[$dir_path];
-                $type = $directory['type'];
-                if (!Pipeline::isCodeType($type)) continue;
-                $source_dir_abs = WORKSPACE . '/' . $dir_path;
-                $to_compile = $directory['precompile_files'];
-                $processCode = $processors[$type];
-                if (is_array($to_compile) && !empty($to_compile)) {
-                    foreach ($to_compile as $file) {
-                        $input_type = General::getExtension($file);
-                        if (Pipeline::getOutputType($input_type) != $type) continue;
-                        $source_file_abs = $source_dir_abs . '/' . $file;
-                        if (!file_exists($source_file_abs)) continue;
-                        switch ($type) {
-                            case 'css':
-                            $output = self::MinifyCSS(Pipeline::processCSS($source_file_abs));
-                            break;
-                            case 'js':
-                            //$output = self::MinifyJS(Pipeline::processJS($source_file_abs));
-                            require_once EXTENSIONS . '/asset_pipeline/lib/JSMin.php';
-                            $output = JSMin::minify(Pipeline::processJS($source_file_abs));
-                            break;
-                        }
-                        Pipeline::deleteCompiledFile($file); // Delete previous compilation, if any
-                        $md5 = md5($output);
-                        $output_file = Pipeline::filenameInsertMD5(
-                            Pipeline::replaceExtension($file, $type), $md5
-                        );
-                        $output_file_abs = AP\OUTPUT_DIR . '/' . $output_file;
-                        General::realiseDirectory(dirname($output_file_abs));
-                        General::writeFile($output_file_abs, $output);
-                        Pipeline::registerCompiledFile($file, $output_file);
-                        $this->_output .= "$output_file<br>";
-                    }
-                }
-            }
-
-            Pipeline::saveCompilationInfo();
         }
-    }
+        chdir($this->doc_root);
 
-    static function minifyCSS($buffer)
-    {
-        $buffer = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $buffer);
-        // Remove space after colons
-        $buffer = str_replace(': ', ':', $buffer);
-        // Remove line breaks & tabs
-        $buffer = str_replace(array("\r\n", "\r", "\n", "\t"), '', $buffer);
-        // Collapse adjacent spaces into a single space
-        $buffer = preg_replace('/\s{2,}/', ' ', $buffer);
-        // Remove spaces that might still be left where we know they aren't needed
-        $buffer = str_replace(array('} '), '}', $buffer);
-        $buffer = str_replace(array('{ '), '{', $buffer);
-        $buffer = str_replace(array('; '), ';', $buffer);
-        $buffer = str_replace(array(', '), ',', $buffer);
-        $buffer = str_replace(array(' }'), '}', $buffer);
-        $buffer = str_replace(array(' {'), '{', $buffer);
-        $buffer = str_replace(array(' ;'), ';', $buffer);
-        $buffer = str_replace(array(' ,'), ',', $buffer);
-        return $buffer;
-    }
+        // Compile code files
 
-    static function minifyJS($buffer)
-    {
-        $buffer = preg_replace("/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/", "", $buffer);
-        $buffer = str_replace(array("\r\n","\r","\t","\n",'  ','    ','     '), '', $buffer);
-        $buffer = preg_replace(array('(( )+\))','(\)( )+)'), ')', $buffer);
-        return $buffer;
+        $settings = Symphony::Configuration()->get(AP\ID);
+        $precompile = explode(',', $settings['precompile_files']);
+        foreach ($precompile as $input_file) {
+            $input_file = trim(trim($input_file), '/');
+            $output_file = file_get_contents('ap.filename-for://' . $input_file);
+            if (General::getExtension($input_file) == 'php') {
+                $input_file = substr($input_file, 0, -4);
+            }
+            $files_compiled[$input_file] = $output_file;
+            $this->_output .= "$output_file<br>";
+        }
+
+        #file_put_contents(AP\PRECOMPILED_FILES, json_encode($files_compiled));
+        file_put_contents(AP\PRECOMPILED_FILES, "<?php\n\nreturn " . var_export($files_compiled, true) . ";");
     }
 
     public function generate($page = NULL)
     {
-        //header('Content-Type: text/javascript');
-        //echo json_encode($this->_output);
         header('Content-Type: text/html');
         echo $this->_output;
         exit();
     }
-
 }

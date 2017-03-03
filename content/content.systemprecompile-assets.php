@@ -1,9 +1,9 @@
 <?php
 
 require_once TOOLKIT . '/class.administrationpage.php';
-//require_once EXTENSIONS . '/asset_pipeline/lib/defines.php';
+//require_once EXTENSIONS . '/asset_machine/lib/defines.php';
 
-use asset_pipeline\AP;
+//use AssetPipeline as AP;
 
 class contentExtensionAsset_pipelinePrecompile_assets extends AdministrationPage
 {
@@ -15,17 +15,18 @@ class contentExtensionAsset_pipelinePrecompile_assets extends AdministrationPage
 
     public function __viewIndex()
     {
+        Symphony::ExtensionManager()->notifyMembers('ModifySymphonyLauncher', '/all/');
         $this->setPageType('table');
         $this->addScriptToHead(URL . '/extensions/asset_pipeline/assets/precompile-assets.js', 400, false);
 
         $this->setTitle(__('%1$s &ndash; %2$s', array(__('Precompile Assets'), __('Symphony'))));
-
+/*
         $view = new XMLElement(
             'div',
             Widget::Label(__('View'), null, 'apply-label-left'),
             array('class' => 'apply actions')
         );
-
+*/
         $this->appendSubheading(
             __('Precompile Assets')
         );
@@ -36,25 +37,11 @@ class contentExtensionAsset_pipelinePrecompile_assets extends AdministrationPage
             array('id' => 'file-adder', 'style' => 'margin: 8px 18px 0 18px;')
         );
 
-        $source_directories = is_file(AP\SOURCE_DIRECTORIES) ? include AP\SOURCE_DIRECTORIES : null;
-        $options = array();
-        if (is_array($source_directories)) {
-            foreach ($source_directories as $path => $directory) {
-                $options[] = array($path, true, $directory['name']);
-            }
-        }
-        $fieldset->appendChild(
-            Widget::Label(
-                __('Asset Directories'),
-                Widget::Select('items[]', $options, array('id' => 'files-available', 'multiple' => 'multiple')),
-                null
-            )
-        );
         $fieldset->appendChild(
             new XMLElement(
                 'button',
                 __('Compile'),
-                array('id' => 'add-files', 'class' => 'button', 'type' => 'submit')
+                array('id' => 'compile', 'class' => 'button', 'type' => 'button')
             )
         );
         $this->Form->appendChild($fieldset);
@@ -71,7 +58,7 @@ class contentExtensionAsset_pipelinePrecompile_assets extends AdministrationPage
         ));
         $this->Form->appendChild($version);*/
 
-        $this->Form->appendChild($actions);
+        //$this->Form->appendChild($actions);
     }
 
 }

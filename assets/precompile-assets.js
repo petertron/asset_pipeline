@@ -2,13 +2,13 @@
     var response_html = "";
 
     $(document).ready(function() {
-        $('form').submit(function(event) {
+        $('#compile').click(function(event) {
             event.preventDefault();
             $('#compilation-log').html("Contacting server...");
             $.ajax({
-                type: 'POST',
-                url: Symphony.Context.get('symphony') + Symphony.Context.get('route'),
-                data: $(this).serialize() + '&action[submit]=1',
+                type: 'GET',
+                url: Symphony.Context.get('symphony') + '/extension/asset_pipeline/precompile_assets_ajax/',
+                data: 'action=compile',
                 success: function(html) {
                     response_html = html;
                 },
@@ -32,7 +32,6 @@
                 }
             });
         });
-
     });
 
 })(jQuery);

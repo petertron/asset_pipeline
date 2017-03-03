@@ -2,19 +2,22 @@
 <extension id="asset_pipeline" status="released" xmlns="http://getsymphony.com/schemas/extension/1.0">
     <name>Asset Pipeline</name>
     <description>Asset preprocessing, minification, concatenation and fingerprinting.</description>
-    <repo type="github">https://github.com/Petertron/asset_pipeline</repo>
+    <repo type="github">https://github.com/petertron/asset_pipeline</repo>
     <url type="discuss">http://www.getsymphony.com/discuss/thread/112155/</url>
     <types>
         <type>Other</type>
     </types>
     <authors>
         <author>
-            <name github="Petertron" symphony="Petertron">Peter Skirenko</name>
+            <name github="petertron" symphony="Petertron">Peter Skirenko</name>
             <email>petertron@mailservice.ms</email>
             <website>http://www.getsymphony.com/get-involved/member/Petertron/</website>
         </author>
     </authors>
     <releases>
+        <release version="0.2.0" date="2017-03-03" min="2.5.0" max="2.7.0">
+            - PHP can be used inside code files, manifest files are now written in PHP.
+        </release>
         <release version="0.1.4" date="2016-12-08" min="2.5.0" max="2.7.0">
             - Improve error handling when precompiling assets.
         </release>

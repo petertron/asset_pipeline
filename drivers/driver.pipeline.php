@@ -2,20 +2,18 @@
 
 // Driver for pipeline output.
 
-//require_once EXTENSIONS . '/asset_pipeline/lib/defines.php';
+use AssetPipeline as AP;
 
-use asset_pipeline\AP;
-
-class extension_Asset_Pipeline extends Extension
+class Extension_Asset_pipeline extends Extension
 {
     public function modifyLauncher()
     {
-        define('SYMPHONY_LAUNCHER', 'renderer_serve_asset');
+        define('SYMPHONY_LAUNCHER', 'asset_pipeline_serve_asset');
 
-        function renderer_serve_asset()
+        function asset_pipeline_serve_asset()
         {
             $file = trim(getCurrentPage(), '/');
-            $output_path_abs = AP\CACHE . '/' . $file;
+            $output_path_abs = AP\ASSET_CACHE . '/' . $file;
             $mimetypes = array(
                 'txt'   => 'text/plain',
                 'css'   => 'text/css',
