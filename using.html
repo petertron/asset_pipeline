@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="https://petertron.github.io/asset_pipeline/">
+    <meta charset="UTF-8">
+    <title>Using - Asset Pipeline</title>
+    <link rel="stylesheet" href="styles-63b3de314952e7c5d80c6866032d1d3b.css" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto" />
+  </head>
+  <body>
+    <nav>
+      <header>
+        <h1>Symphony CMS<br>Asset Pipeline</h1>
+        <p class="center">by Peter Skirenko</p>
+        <p>Instructions for version 0.2+</p>
+      </header>
+      <ul>
+        <li>
+          <a href="">Home</a>
+        </li>
+        <li>
+          <a href="setting-up">Setting Up</a>
+        </li>
+        <li>
+          <a href="using">Using</a>
+        </li>
+      </ul>
+    </nav>
+    <main><header><h1>Using</h1></header><h2>The asset pipeline in XSL stylesheets</h2>
+
+<h3>Namespace</h3>
+
+<p>Since the asset pipeline uses namespaced functions, the namespace <em>http://git.io/sym-asset-pipeline</em> needs to be declared in the ‘xsl:stylesheet’ tag.</p>
+
+<pre><code class="xml"><span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;xsl:stylesheet</span> <span style="color: #000066;">version</span>=<span style="color: #ff0000;">"1.0"</span></span>
+<span style="color: #009900;">    <span style="color: #000066;">xmlns:xsl</span>=<span style="color: #ff0000;">"http://www.w3.org/1999/XSL/Transform"</span></span>
+<span style="color: #009900;">    <span style="color: #000066;">xmlns:ap</span>=<span style="color: #ff0000;">"http://git.io/sym-asset-pipeline"</span></span>
+<span style="color: #009900;">    <span style="color: #000066;">exclude-result-prefixes</span>=<span style="color: #ff0000;">"ap"</span><span style="color: #000000; font-weight: bold;">&gt;</span></span></code></pre>
+
+<h3>CSS</h3>
+
+<p>CSS files are specified using the ‘css-url’ function.</p>
+
+<pre><code class="xml"><span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;link</span> <span style="color: #000066;">rel</span>=<span style="color: #ff0000;">"stylesheet"</span> <span style="color: #000066;">href</span>=<span style="color: #ff0000;">"{ap:css-url('application')}"</span> <span style="color: #000066;">media</span>=<span style="color: #ff0000;">"screen"</span><span style="color: #000000; font-weight: bold;">/&gt;</span></span></code></pre>
+
+<p>Asset Pipeline will look for a file called <code>application.css</code> or <code>application.css.php</code> in that order. If neither file exists and if a CSS preprocessor extension is installed then <code>application.&lt;preprocessor file extension&gt;</code> or <code>application.&lt;preprocessor file extension&gt;.php</code> will be looked for.</p>
+
+<h3>JavaScript</h3>
+
+<p>JavaScript files are specified using the ‘js-url’ function.</p>
+
+<pre><code class="xml"><span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;script</span> <span style="color: #000066;">src</span>=<span style="color: #ff0000;">"{ap:js-url('application')}"</span><span style="color: #000000; font-weight: bold;">&gt;</span><span style="color: #000000; font-weight: bold;">&lt;/script<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></code></pre>
+
+<p>Asset Pipeline will look for a suitable file in the same way as for CSS.</p>
+
+<h3>Images and other non-code files</h3>
+
+<p>Files other than CSS/JS are specified using the <em>url-for</em> function.</p>
+
+<pre><code class="xml"><span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;img</span> <span style="color: #000066;">src</span>=<span style="color: #ff0000;">"{ap:url('picture.jpg')}"</span> <span style="color: #000000; font-weight: bold;">/&gt;</span></span></code></pre>
+
+<h3>Data</h3>
+
+<p>Data in base 64 format can be included using the <em>data</em> function.</p>
+
+<pre><code class="xml"><span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;img</span> <span style="color: #000066;">src</span>=<span style="color: #ff0000;">"{ap:data('picture.jpg')}"</span> <span style="color: #000000; font-weight: bold;">/&gt;</span></span></code></pre>
+
+<p>The above will be rendered as:</p>
+
+<pre><code class="xml"><span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;img</span> <span style="color: #000066;">src</span>=<span style="color: #ff0000;">"data:image/jpeg;base64,iVBORw0KGgo....."</span> <span style="color: #000000; font-weight: bold;">/&gt;</span></span></code></pre>
+
+<h2>Using PHP within CSS and JS</h2>
+
+<p>To embed PHP, add the PHP extension to the file name, e.g. <code>styles.css.php</code>. In the example below, the URL for <code>pattern.png</code> will be inserted.</p>
+
+<pre><code class="php">body {
+    background-image: url(<span style="color: #000000; font-weight: bold;">&lt;?php</span> <span style="color: #b1b100;">include</span> <span style="color: #0000ff;">'ap.url://pattern.png'</span> <span style="color: #000000; font-weight: bold;">?&gt;</span>);
+    background-repeat: repeat;
+}</code></pre>
+
+<p>The above will render on page load as:</p>
+
+<pre><code class="php">body <span style="color: #009900;">{</span>
+    background<span style="color: #339933;">-</span>image<span style="color: #339933;">:</span> url<span style="color: #009900;">(</span><span style="color: #339933;">/</span>pattern<span style="color: #339933;">.</span>png<span style="color: #339933;">/</span>?mode<span style="color: #339933;">=</span>pipeline<span style="color: #009900;">)</span><span style="color: #339933;">;</span>
+    background<span style="color: #339933;">-</span>repeat<span style="color: #339933;">:</span> repeat<span style="color: #339933;">;</span>
+<span style="color: #009900;">}</span></code></pre>
+
+<p>The code below shows how to include base 64 data instead of a URL:</p>
+
+<pre><code class="php">body {
+    background-image: url(<span style="color: #000000; font-weight: bold;">&lt;?php</span> <span style="color: #b1b100;">include</span> <span style="color: #0000ff;">'ap://pattern.png'</span> <span style="color: #000000; font-weight: bold;">?&gt;</span>);
+    background-repeat: repeat;
+}</code></pre>
+
+<h3>Manifest files</h3>
+
+<p>PHP can be used to include a number of code files into a single file.</p>
+
+<pre><code class="php">&lt;!-- application.css.php --&gt;
+
+<span style="color: #000000; font-weight: bold;">&lt;?php</span>
+
+<span style="color: #b1b100;">include</span> <span style="color: #0000ff;">'ap://main.css'</span><span style="color: #339933;">;</span>
+<span style="color: #b1b100;">include</span> <span style="color: #0000ff;">'ap://home.styl'</span><span style="color: #339933;">;</span>
+<span style="color: #b1b100;">include</span> <span style="color: #0000ff;">'ap://articles'</span><span style="color: #339933;">;</span> <span style="color: #666666; font-style: italic;">//The pipeline will look for a suitable file such as 'articles.css' or 'articles.styl'</span></code></pre>
+
+<h2>Precompiling assets for production</h2>
+
+<p>When a website is put into production, there is no longer any need to recompile assets on page load.</p>
+
+<h3>Specifying the files to be precompiled</h3>
+
+<p>Non-text files will be compiled automatically. Code files must be specified, and this is done by putting a comma-separated list of files in the ‘Precompile Code Files’ field on Symphony’s Preferences page.</p>
+
+<h3>How to precompile</h3>
+
+<p>Select ‘Precompile Assets’ from Symphony’s System menu.</p>
+</main>
+  </body>
+</html>
