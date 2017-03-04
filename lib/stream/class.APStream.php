@@ -96,7 +96,7 @@ class APStream extends Stream
                 }
             }
 
-            if ($this->action == 'url-for') {
+            if ($this->action == 'url') {
                 // Save file and output file URL.
                 $output_file = filename_insert_md5($modified_file_path, md5($content));
                 if (APP_MODE == 'administration') {
@@ -106,7 +106,7 @@ class APStream extends Stream
                     file_put_contents(ASSET_CACHE . '/' . $output_file, $content);
                     $this->output = '/' . $output_file . '/?mode=pipeline';
                 }
-            } elseif ($this->action == 'filename-for') {
+            } elseif ($this->action == 'filename') {
                 $output_file = filename_insert_md5($modified_file_path, md5($content));
                 file_put_contents(OUTPUT_DIR . '/' . $output_file, $content);
                 $this->output = $output_file;
@@ -115,7 +115,7 @@ class APStream extends Stream
             }
         } else {
             // Non-text file.
-            if ($this->action == 'url-for') {
+            if ($this->action == 'url') {
                 $output_file = filename_insert_md5($modified_file_path, md5_file($source_file_abs));
                 if (APP_MODE == 'administration') {
                     copy($source_file_abs, OUTPUT_DIR . '/' . $output_file);

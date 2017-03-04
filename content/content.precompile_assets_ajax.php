@@ -62,7 +62,7 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
         $precompile = explode(',', $settings['precompile_files']);
         foreach ($precompile as $input_file) {
             $input_file = trim(trim($input_file), '/');
-            $output_file = file_get_contents('ap.filename-for://' . $input_file);
+            $output_file = file_get_contents('ap.filename://' . $input_file);
             if (General::getExtension($input_file) == 'php') {
                 $input_file = substr($input_file, 0, -4);
             }

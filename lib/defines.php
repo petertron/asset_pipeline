@@ -30,5 +30,6 @@ if (INSTALLATION_COMPLETE) {
     $output_dir = trim($settings['output_directory'], '/');
     $use_docroot = ($settings['output_parent_directory'] == 'docroot');
     define_here('OUTPUT_DIR', ($use_docroot ? \DOCROOT : \WORKSPACE) . '/' . $output_dir);
+    //define_here('OUTPUT_URL', \URL . ($use_docroot ? '/' : '/workspace/') . $output_dir);
     define_here('OUTPUT_URL', ($use_docroot ? '/' : '/workspace/') . $output_dir);
 }

@@ -110,7 +110,7 @@ function url($file)
     if (is_file(OUTPUT_DIR . '/' . $file_out)) {
         return OUTPUT_URL . '/' . $file_out;
     } else {
-        return file_get_contents('ap.url-for://' . $file);
+        return file_get_contents('ap.url://' . $file);
     }
 }
 
@@ -123,7 +123,7 @@ function css_url($file)
         return OUTPUT_URL . '/' . $file_out;
     } else {
         #return file_get_contents('am.data://css-url/' . $file);
-        return file_get_contents('ap.url-for://' . $file . '?output_type=css');
+        return file_get_contents('ap.url://' . $file . '?output_type=css');
     }
 }
 
@@ -134,7 +134,7 @@ function js_url($file)
     if (is_file(OUTPUT_DIR . '/' . $file_out)) {
         return OUTPUT_URL . '/' . $file_out;
     } else {
-        return file_get_contents('ap.url-for://' . $file . '?output_type=js');
+        return file_get_contents('ap.url://' . $file . '?output_type=js');
     }
 }
 
