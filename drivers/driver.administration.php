@@ -23,16 +23,15 @@ class Extension_Asset_pipeline extends Extension
 
     public function fetchNavigation()
     {
-        if (AP\INSTALLATION_COMPLETE) {
-            return array(
+        return AP\INSTALLATION_COMPLETE ?
+            array(
                 array(
                     'location' => __('System'),
                     'name' => __('Precompile Assets'),
                     'link' => '/system/precompile-assets/',
                     'relative' => false
                 )
-            );
-        }
+            ) : null;
     }
 
     public function getSubscribedDelegates()
@@ -156,41 +155,51 @@ class Extension_Asset_pipeline extends Extension
     {
         $current_values = Symphony::Configuration()->get(AP\ID);
         $new_values = $context['settings'][AP\ID];
-        $errors = $context['errors'];
 
         $source_dir = trim(trim($new_values['source_directory'], '/'));
         if (!$source_dir) {
-            $errors[AP\ID]['source_directory'] = __('This is a required field');
-        } else {
-            $new_values['source_directory'] = $source_dir;
-            $source_dir_abs = WORKSPACE . '/' . $source_dir;
-            // Create new source directory if necessary.
-            $source_dir_current = isset($current_values['source_directory']) ?
-                $current_values['source_directory'] : null;
-            $source_dir_current_abs = isset($source_dir_current) ?
-                WORKSPACE . '/' . $source_dir_current : null;
-            if ($source_dir_current_abs) {
-                if ($source_dir != $source_dir_current && !is_dir($source_dir_abs)) {
-                    if (!is_dir(dirname($source_dir_abs))) {
-                        General::realiseDirectory(dirname($source_dir_abs));
-                    }
-                    rename($source_dir_current_abs, $source_dir_abs);
-                }
-            } else {
-                // Create new directory.
-                General::realiseDirectory($source_dir_abs);
-                General::realiseDirectory($source_dir_abs . '/images');
-                General::realiseDirectory($source_dir_abs . '/scripts');
-                General::realiseDirectory($source_dir_abs . '/stylesheets');
-            }
+            $context['errors'][AP\ID]['source_directory'] = __('This is a required field');
         }
-        // Create asset directories
-        $output_dir = (($self_settings['output_parent_directory'] == 'docroot') ? DOCROOT : WORKSPACE)
-            . '/' . trim($self_settings['output_directory'], '/');
-        General::realiseDirectory($output_dir);
+        $output_dir = trim(trim($new_values['output_directory'], '/'));
+        if (!$output_dir) {
+            $context['errors'][AP\ID]['output_directory'] = __('This is a required field');
+        }
+
+        if (!empty($context['errors'][AP\ID])) {
+            return;
+        }
+
+        $source_dir_abs = WORKSPACE . '/' . $source_dir;
+        // Create new source directory if necessary.
+        $source_dir_current = isset($current_values['source_directory']) ?
+            $current_values['source_directory'] : null;
+        $source_dir_current_abs = isset($source_dir_current) ?
+            WORKSPACE . '/' . $source_dir_current : null;
+        if ($source_dir_current_abs) {
+            if ($source_dir != $source_dir_current && !is_dir($source_dir_abs)) {
+                if (!is_dir(dirname($source_dir_abs))) {
+                    General::realiseDirectory(dirname($source_dir_abs));
+                }
+                rename($source_dir_current_abs, $source_dir_abs);
+            }
+        } else {
+            // Create new directory.
+            General::realiseDirectory($source_dir_abs);
+            General::realiseDirectory($source_dir_abs . '/images');
+            General::realiseDirectory($source_dir_abs . '/scripts');
+            General::realiseDirectory($source_dir_abs . '/stylesheets');
+        }
+
+        // Create output directory.
+        $output_dir_abs = (($new_values['output_parent_directory'] == 'docroot') ? DOCROOT : WORKSPACE) . '/' . $output_dir;
+        General::realiseDirectory($output_dir_abs);
+
+        // Create asset cache.
         General::realiseDirectory(AP\ASSET_CACHE);
 
-
+        $new_values['source_directory'] = $source_dir;
+        $new_values['output_directory'] = $output_dir;
+        $context['settings'][AP\ID] = $new_values;
     }
 
     public function postCallback($context)
