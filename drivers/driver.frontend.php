@@ -47,12 +47,12 @@ class extension_Asset_pipeline extends Extension
         $doc = new DOMDocument();
         $doc->loadXML($context['xsl']);
         //$doc->formatOutput = TRUE;
-        $doc->createAttributeNS('http://exslt.org/functions', 'func:function');
-        $doc->createAttributeNS('http://git.io/sym-asset-pipeline', 'ap:url');
-        $doc->createAttributeNS('http://php.net/xsl', 'php:functionString');
+        $doc->createAttributeNS('http://exslt.org/functions', 'func:_');
+        $doc->createAttributeNS('http://php.net/xsl', 'php:_');
+        $doc->createAttributeNS('http://git.io/sym-asset-pipeline', 'ap:_');
         $stylesheet = $doc->firstChild;
         $stylesheet->setAttribute('extension-element-prefixes', 'func');
-        $stylesheet->setAttribute('exclude-result-prefixes', 'func ap');
+        #$stylesheet->setAttribute('exclude-result-prefixes', 'func');
 
         foreach ($asset_functions as $item) {
             $func_function = $doc->createElement('func:function');

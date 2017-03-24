@@ -65,8 +65,6 @@ class Extension_Asset_pipeline extends Extension
         );
     }
 
-    // Reroute URL for Compilation List page
-
     public function appendPreferences($context)
     {
         Administration::instance()->Page->addScriptToHead(
