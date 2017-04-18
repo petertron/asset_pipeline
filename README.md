@@ -1,4 +1,4 @@
-# Asset Pipeline version 0.2.0
+# Asset Pipeline version 0.2.1
 
 A Symphony CMS extension which provides an asset pipeline quite like the one Ruby on Rails has.
 

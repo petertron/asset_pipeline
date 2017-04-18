@@ -15,6 +15,9 @@
         </author>
     </authors>
     <releases>
+        <release version="0.2.1" date="2017-04-18" min="2.5.0" max="2.7.0">
+            - Bugfix: put JSMin class in namespace.
+        </release>
         <release version="0.2.0" date="2017-03-03" min="2.5.0" max="2.7.0">
             - PHP can be used inside code files, manifest files are now written in PHP.
         </release>
