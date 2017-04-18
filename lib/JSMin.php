@@ -1,4 +1,8 @@
 <?php
+
+namespace AssetPipeline;
+use Exception;
+
 /**
  * JSMin.php - modified PHP implementation of Douglas Crockford's JSMin.
  *
