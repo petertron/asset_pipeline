@@ -51,6 +51,11 @@ class Stream
         }
     }
 
+    final function stream_set_option($option, $arg1, $arg2)
+    {
+        return false;
+    }
+    
     final function stream_open($path)//, $mode, $options, &$opened_path)
     {
         $path_parts = null;
