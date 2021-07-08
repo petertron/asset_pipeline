@@ -21,7 +21,6 @@ class Stream
             '/extension/asset_pipeline/',
             array('preprocessors' => &self::$preprocessors)
         );
-        //print_r(self::$preprocessors); die;
     }
 
     static function getSourceFileRelativePath($path_abs)
@@ -53,7 +52,7 @@ class Stream
 
     final function stream_set_option($option, $arg1, $arg2)
     {
-        return false;
+        return true;
     }
     
     final function stream_open($path)//, $mode, $options, &$opened_path)
@@ -110,7 +109,6 @@ class Stream
         if (empty($glob)) {
             echo "No file found: $glob_exp"; die;
         }
-        //print_r($glob); echo '<br>';
         return (!empty($glob)) ? $glob[0] : null;
     }
 }
