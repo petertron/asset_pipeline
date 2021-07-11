@@ -1,6 +1,5 @@
 <?php
 
-//require_once EXTENSIONS . '/asset_pipeline/lib/functions.php';
 require_once EXTENSIONS . '/asset_pipeline/lib/stream/stream-setup.php';
 
 use AssetPipeline as AP;
@@ -70,7 +69,6 @@ class contentExtensionAsset_pipelinePrecompile_assets_ajax
             $this->_output .= "$output_file<br>";
         }
 
-        #file_put_contents(AP\PRECOMPILED_FILES, json_encode($files_compiled));
         file_put_contents(AP\PRECOMPILED_FILES, "<?php\n\nreturn " . var_export($files_compiled, true) . ";");
     }
 

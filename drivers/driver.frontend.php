@@ -42,7 +42,12 @@ class extension_Asset_pipeline extends Extension
         );
 
         $page = $context['page'];
-        $page->registerPHPFunction(array_column($asset_functions, 'php_function'));
+        $php_functions = array_column($asset_functions, 'php_function');
+        if (method_exists($page, 'registerPHPFunction')) {
+            $page->registerPHPFunction($php_functions); // Symphony 2
+        } else {
+            $page->Proc->registerPHPFunction($php_functions); // Symphony 3
+        }
 
         $doc = new DOMDocument();
         $doc->loadXML($context['xsl']);

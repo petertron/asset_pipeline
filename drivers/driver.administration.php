@@ -11,7 +11,8 @@ class Extension_Asset_pipeline extends Extension
     static $default_settings = array(
         'source_directory' => 'assets-src',
         'output_parent_directory' => 'workspace',
-        'output_directory' => 'assets'
+        'output_directory' => 'assets',
+        'precompile_files' => ''
     );
 
     public function uninstall()
@@ -67,9 +68,9 @@ class Extension_Asset_pipeline extends Extension
 
     public function appendPreferences($context)
     {
-        Administration::instance()->Page->addScriptToHead(
+        /*Administration::instance()->Page->addScriptToHead(
             AP\ASSETS_URL . '/asset-pipeline.preferences.js', 3134
-        );
+        );*/
 
         $fieldset = new XMLElement(
             'fieldset',
@@ -200,18 +201,10 @@ class Extension_Asset_pipeline extends Extension
         $context['settings'][AP\ID] = $new_values;
     }
 
-    public function postCallback($context)
+    public function modifyLauncher()
     {
-        //echo "<pre>";print_r($context);echo "</pre>"; die;
-        $callback = $context['callback'];
-        //echo "<pre>";print_r($callback);echo "</pre>"; die;
-
-        if ($callback['driver'] == 'systemprecompile-assets') {
-            $callback['driver_location'] = EXTENSIONS . '/asset_pipeline/content/content.systemprecompile-assets.php';
-            $callback['classname'] = 'contentExtensionAsset_pipelinePrecompile_assets';
+        if (getCurrentPage() == '/system/precompile-assets/') {
+            $_GET['symphony-page'] = 'extension/asset_pipeline/precompile_assets/';
         }
-
-        $context['callback'] = $callback;
     }
-
 }

@@ -50,11 +50,12 @@ class Stream
         }
     }
 
-    final function stream_set_option($option, $arg1, $arg2)
+    final function stream_set_option($option, $arg1 = null, $arg2 = null)
     {
-        return true;
+        #echo $option . ', ' . $arg1 . ', ' . $arg2; die;
+        return false;
     }
-    
+
     final function stream_open($path)//, $mode, $options, &$opened_path)
     {
         $path_parts = null;

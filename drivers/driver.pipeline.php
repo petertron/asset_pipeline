@@ -12,8 +12,9 @@ class Extension_Asset_pipeline extends Extension
 
         function asset_pipeline_serve_asset()
         {
-            $file = trim(getCurrentPage(), '/');
-            $output_path_abs = AP\ASSET_CACHE . '/' . $file;
+            $page = getCurrentPage();
+            $filename = trim(substr($page, 0, strpos($page, '?')), '/');
+            $output_path_abs = AP\ASSET_CACHE . '/' . $filename;
             $mimetypes = array(
                 'txt'   => 'text/plain',
                 'css'   => 'text/css',
@@ -49,7 +50,8 @@ class Extension_Asset_pipeline extends Extension
 
             header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
             header('Cache-Control: no-cache');
-            header('Content-type: ' . $mimetypes[General::getExtension($file)]);
+            $file_ext = General::getExtension($output_path_abs);
+            header('Content-type: ' . isset($mimetypes[$file_ext]) ? $mimetypes[$file_ext] : 'text/plain');
             readfile($output_path_abs);
             exit;
         }
