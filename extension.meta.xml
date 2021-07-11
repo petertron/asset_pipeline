@@ -17,7 +17,8 @@
     <releases>
         <release version="0.3.0" date="2021-07-11" min="2.5.0" max="3.0.0">
             - PHP 7.4 compatibility.
-            - symphony 3 compatibility.
+            - Symphony 3 compatibility.
+            - Bug fixes.
         </release>
         <release version="0.2.1" date="2017-04-18" min="2.5.0" max="2.7.0">
             - Bugfix: put JSMin class in namespace.
