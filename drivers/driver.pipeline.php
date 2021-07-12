@@ -51,7 +51,7 @@ class Extension_Asset_pipeline extends Extension
             header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
             header('Cache-Control: no-cache');
             $file_ext = General::getExtension($output_path_abs);
-            header('Content-type: ' . isset($mimetypes[$file_ext]) ? $mimetypes[$file_ext] : 'text/plain');
+            header('Content-type: ' . (isset($mimetypes[$file_ext]) ? $mimetypes[$file_ext] : 'text/plain'));
             readfile($output_path_abs);
             exit;
         }
